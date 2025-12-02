@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SkyScan - Advanced Vulnerability Detection</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+    <!-- Starry Background Canvas -->
+    <canvas id="starry-bg"></canvas>
+
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <span class="logo-icon">SS</span> SkyScan
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#features">Features</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#team">Team</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#aboutModal">About Us</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/login">Login</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link btn btn-primary text-white ms-2" href="/register">Get Started</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="container">
+            <h1>Protect Your Digital Infrastructure</h1>
+            <p class="lead">Advanced vulnerability scanning for network & cloud security</p>
+            <div class="d-flex justify-content-center gap-3">
+                <a href="/register" class="btn btn-primary btn-lg">
+                    <i class="bi bi-rocket-takeoff"></i> Start Free Scan
+                </a>
+                <a href="/login" class="btn btn-outline-primary btn-lg">
+                    <i class="bi bi-box-arrow-in-right"></i> Login
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="features-section">
+        <div class="container">
+            <h2>Key Features</h2>
+            <div class="row g-4">
+                <div class="col-lg-6">
+                    <div class="feature-card">
+                        <i class="bi bi-radar"></i>
+                        <h4>Network Scanning</h4>
+                        <p>Comprehensive asset discovery and port scanning using advanced techniques</p>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="feature-card">
+                        <i class="bi bi-cloud"></i>
+                        <h4>Cloud Security</h4>
+                        <p>Automated cloud infrastructure vulnerability assessment and compliance checks</p>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="feature-card">
+                        <i class="bi bi-bug"></i>
+                        <h4>CVE Matching</h4>
+                        <p>Automatic vulnerability detection using comprehensive CVE database</p>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="feature-card">
+                        <i class="bi bi-speedometer2"></i>
+                        <h4>CVSS Scoring</h4>
+                        <p>Risk prioritization based on industry-standard CVSS metrics</p>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="feature-card">
+                        <i class="bi bi-file-earmark-text"></i>
+                        <h4>Detailed Reports</h4>
+                        <p>Comprehensive vulnerability reports with remediation guidance</p>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="feature-card">
+                        <i class="bi bi-graph-up"></i>
+                        <h4>Dashboard Analytics</h4>
+                        <p>Visual analytics and historical scan tracking</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Team Section -->
+    <section id="team" class="team-section">
+        <div class="container">
+            <h2>Our Team</h2>
+            <p class="text-center text-muted mb-5 lead">
+                Developed as part of MIT Mini Project by passionate cybersecurity enthusiasts
+                dedicated to making the digital world safer.
+                    </p>
+                    <div class="row mt-5">
+                        <div class="col-md-12">
+                            <div class="card glass-effect p-4">
+                                <h4 class="mb-3">Project Team</h4>
+                                <p class="mb-3">
+            <p class="text-center text-muted mb-5 lead">
+                Developed as part of MIT Mini Project by passionate cybersecurity enthusiasts
+                dedicated to making the digital world safer.
+            </p>
+            
+            <div class="row g-4">
+                <div class="col-md-3">
+                    <div class="team-member">
+                        <i class="bi bi-person-circle"></i>
+                        <h5>Security Engineer</h5>
+                        <p>Network Scanning Expert</p>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="team-member">
+                        <i class="bi bi-person-circle"></i>
+                        <h5>Cloud Specialist</h5>
+                        <p>Cloud Security Analyst</p>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="team-member">
+                        <i class="bi bi-person-circle"></i>
+                        <h5>Backend Developer</h5>
+                        <p>API Architecture</p>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="team-member">
+                        <i class="bi bi-person-circle"></i>
+                        <h5>Frontend Developer</h5>
+                        <p>UI/UX Design</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="text-center mt-5">
+                <div class="social-links justify-content-center">
+            <div class="text-center mt-5">
+                <div class="social-links justify-content-center">
+                    <a href="https://github.com/yourusername" target="_blank" title="GitHub">
+                        <i class="bi bi-github"></i>
+                    </a>
+                    <a href="https://linkedin.com/in/yourusername" target="_blank" title="LinkedIn">
+                        <i class="bi bi-linkedin"></i>
+                    </a>
+                    <a href="https://twitter.com/yourusername" target="_blank" title="Twitter">
+                        <i class="bi bi-twitter"></i>
+                    </a>
+                    <a href="mailto:your.email@example.com" target="_blank" title="Email">
+                        <i class="bi bi-envelope"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Us Modal -->
+    <div class="modal fade" id="aboutModal" tabindex="-1" aria-labelledby="aboutModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="aboutModalLabel">
+                        About SkyScan
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <h4 class="mb-3">Our Mission</h4>
+                    <p>
+                        SkyScan is an advanced cybersecurity platform designed to identify and assess 
+                        security vulnerabilities across network infrastructure and cloud environments. Our mission is to 
+                        make enterprise-grade security assessment accessible and easy to use.
+                    </p>
+                    
+                    <h4 class="mb-3 mt-4">Technology Stack</h4>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i><strong>Backend:</strong> Python FastAPI with async/await support</li>
+                        <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i><strong>Database:</strong> MongoDB for flexible document storage</li>
+                        <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i><strong>Security:</strong> JWT authentication with bcrypt password hashing</li>
+                        <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i><strong>Scanning:</strong> Nmap integration with custom CVE matching engine</li>
+                        <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i><strong>Frontend:</strong> Modern responsive design with Bootstrap 5</li>
+                    </ul>
+                    
+                    <h4 class="mb-3 mt-4">Key Capabilities</h4>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <ul class="list-unstyled">
+                                <li class="mb-2"><i class="bi bi-arrow-right-circle text-primary me-2"></i>Network vulnerability scanning</li>
+                                <li class="mb-2"><i class="bi bi-arrow-right-circle text-primary me-2"></i>Cloud security assessment</li>
+                                <li class="mb-2"><i class="bi bi-arrow-right-circle text-primary me-2"></i>Service fingerprinting</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <ul class="list-unstyled">
+                                <li class="mb-2"><i class="bi bi-arrow-right-circle text-primary me-2"></i>CVE database matching</li>
+                                <li class="mb-2"><i class="bi bi-arrow-right-circle text-primary me-2"></i>CVSS risk scoring</li>
+                                <li class="mb-2"><i class="bi bi-arrow-right-circle text-primary me-2"></i>Comprehensive reporting</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <h4 class="mb-3 mt-4">Development Team</h4>
+                    <p>
+                        This project was developed as part of MIT Mini Project by a dedicated team of cybersecurity 
+                        enthusiasts. We believe in making the digital world safer through accessible security tools.
+                    </p>
+                    
+                    <div class="text-center mt-4">
+                        <p class="mb-2"><strong>Connect with us:</strong></p>
+                        <div class="social-links justify-content-center">
+                            <a href="https://github.com/yourusername" target="_blank" title="GitHub">
+                                <i class="bi bi-github"></i>
+                            </a>
+                            <a href="https://linkedin.com/in/yourusername" target="_blank" title="LinkedIn">
+                                <i class="bi bi-linkedin"></i>
+                            </a>
+                            <a href="https://twitter.com/yourusername" target="_blank" title="Twitter">
+                                <i class="bi bi-twitter"></i>
+                            </a>
+                            <a href="mailto:your.email@example.com" target="_blank" title="Email">
+                                <i class="bi bi-envelope"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <a href="/register" class="btn btn-primary">Get Started</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4 mb-4">
+                    <h5>SkyScan</h5>
+                    <p>Advanced vulnerability detection for network & cloud security.</p>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <h5>Quick Links</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="#features">Features</a></li>
+                        <li><a href="#team">Team</a></li>
+                        <li><a href="#" data-bs-toggle="modal" data-bs-target="#aboutModal">About Us</a></li>
+                        <li><a href="/register">Get Started</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <h5>Connect</h5>
+                    <p>Follow us on social media:</p>
+                    <div class="social-links">
+                        <a href="https://github.com/yourusername" target="_blank" title="GitHub">
+                            <i class="bi bi-github"></i>
+                        </a>
+                        <a href="https://linkedin.com/in/yourusername" target="_blank" title="LinkedIn">
+                            <i class="bi bi-linkedin"></i>
+                        </a>
+                        <a href="https://twitter.com/yourusername" target="_blank" title="Twitter">
+                            <i class="bi bi-twitter"></i>
+                        </a>
+                        <a href="mailto:your.email@example.com" target="_blank" title="Email">
+                            <i class="bi bi-envelope"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <hr style="border-color: rgba(255, 255, 255, 0.2);">
+            <div class="text-center">
+                <p class="mb-0">&copy; 2025 SkyScan. MIT Mini Project.</p>
+                <p class="mb-0">Built with <i class="bi bi-heart-fill text-danger"></i> for a safer digital world</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/static/starry-bg.js"></script>
+    <script>
+        // Add smooth scroll
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Scroll reveal for feature cards
+        const observerOptions = {
+            threshold: 0.2,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach((entry, index) => {
+                if (entry.isIntersecting) {
+                    setTimeout(() => {
+                        entry.target.classList.add('reveal');
+                    }, index * 100);
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, observerOptions);
+
+        const featureCards = document.querySelectorAll('.feature-card');
+        featureCards.forEach(card => observer.observe(card));
+    </script>
+    <script src="/static/starry-bg.js"></script>
+</body>
+</html>

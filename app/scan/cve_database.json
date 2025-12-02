@@ -1,0 +1,92 @@
+[
+  {
+    "cve_id": "CVE-2021-44228",
+    "description": "Apache Log4j2 Remote Code Execution (Log4Shell)",
+    "severity": "CRITICAL",
+    "cvss_score": 10.0,
+    "affected_products": ["Apache Log4j", "log4j-core"],
+    "affected_versions": ["2.0-beta9 to 2.15.0"],
+    "cpe": "cpe:2.3:a:apache:log4j:*:*:*:*:*:*:*:*"
+  },
+  {
+    "cve_id": "CVE-2022-22965",
+    "description": "Spring Framework Remote Code Execution (Spring4Shell)",
+    "severity": "CRITICAL",
+    "cvss_score": 9.8,
+    "affected_products": ["Spring Framework", "spring-core"],
+    "affected_versions": ["5.3.0 to 5.3.17", "5.2.0 to 5.2.19"],
+    "cpe": "cpe:2.3:a:vmware:spring_framework:*:*:*:*:*:*:*:*"
+  },
+  {
+    "cve_id": "CVE-2021-3156",
+    "description": "Sudo Heap-Based Buffer Overflow",
+    "severity": "HIGH",
+    "cvss_score": 7.8,
+    "affected_products": ["sudo"],
+    "affected_versions": ["1.8.2 to 1.8.31p2", "1.9.0 to 1.9.5p1"],
+    "cpe": "cpe:2.3:a:sudo_project:sudo:*:*:*:*:*:*:*:*"
+  },
+  {
+    "cve_id": "CVE-2021-41773",
+    "description": "Apache HTTP Server Path Traversal",
+    "severity": "HIGH",
+    "cvss_score": 7.5,
+    "affected_products": ["Apache HTTP Server", "httpd"],
+    "affected_versions": ["2.4.49", "2.4.50"],
+    "cpe": "cpe:2.3:a:apache:http_server:*:*:*:*:*:*:*:*"
+  },
+  {
+    "cve_id": "CVE-2022-0847",
+    "description": "Linux Kernel Dirty Pipe Privilege Escalation",
+    "severity": "HIGH",
+    "cvss_score": 7.8,
+    "affected_products": ["Linux Kernel"],
+    "affected_versions": ["5.8 to 5.16.11"],
+    "cpe": "cpe:2.3:o:linux:linux_kernel:*:*:*:*:*:*:*:*"
+  },
+  {
+    "cve_id": "CVE-2021-34527",
+    "description": "Windows Print Spooler RCE (PrintNightmare)",
+    "severity": "CRITICAL",
+    "cvss_score": 8.8,
+    "affected_products": ["Windows Print Spooler"],
+    "affected_versions": ["Windows Server 2019", "Windows 10", "Windows 11"],
+    "cpe": "cpe:2.3:o:microsoft:windows:*:*:*:*:*:*:*:*"
+  },
+  {
+    "cve_id": "CVE-2020-1472",
+    "description": "Netlogon Privilege Escalation (Zerologon)",
+    "severity": "CRITICAL",
+    "cvss_score": 10.0,
+    "affected_products": ["Windows Netlogon"],
+    "affected_versions": ["Windows Server 2008 to 2019"],
+    "cpe": "cpe:2.3:o:microsoft:windows_server:*:*:*:*:*:*:*:*"
+  },
+  {
+    "cve_id": "CVE-2021-26855",
+    "description": "Microsoft Exchange Server RCE (ProxyLogon)",
+    "severity": "CRITICAL",
+    "cvss_score": 9.8,
+    "affected_products": ["Microsoft Exchange Server"],
+    "affected_versions": ["2013", "2016", "2019"],
+    "cpe": "cpe:2.3:a:microsoft:exchange_server:*:*:*:*:*:*:*:*"
+  },
+  {
+    "cve_id": "CVE-2022-30190",
+    "description": "Microsoft Windows Support Diagnostic Tool RCE (Follina)",
+    "severity": "HIGH",
+    "cvss_score": 7.8,
+    "affected_products": ["Windows MSDT"],
+    "affected_versions": ["Windows 7 to Windows 11"],
+    "cpe": "cpe:2.3:o:microsoft:windows:*:*:*:*:*:*:*:*"
+  },
+  {
+    "cve_id": "CVE-2021-44832",
+    "description": "Apache Log4j Arbitrary Code Execution",
+    "severity": "MEDIUM",
+    "cvss_score": 6.6,
+    "affected_products": ["Apache Log4j"],
+    "affected_versions": ["2.0-beta7 to 2.17.0"],
+    "cpe": "cpe:2.3:a:apache:log4j:*:*:*:*:*:*:*:*"
+  }
+]
