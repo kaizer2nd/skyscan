@@ -347,83 +347,121 @@ async function viewScanDetail(scanId) {
 // Display scan detail in modal
 function displayScanDetail(scan) {
     const modalContent = document.getElementById('scanDetailContent');
+    const modalTitle = document.getElementById('modalTitle');
     
-    // Build report content based on scan type
-    let reportHTML = '';
+    // Set modal title
+    const scanTypeLabel = scan.scan_type.charAt(0).toUpperCase() + scan.scan_type.slice(1);
+    modalTitle.textContent = `${scanTypeLabel} Scan Report`;
     
-    if (scan.scan_type === 'vulnerability') {
-        // Show formatted text report for vulnerability scan
-        reportHTML = `
-            <div class="mb-3">
-                <h6><strong>Target:</strong> ${scan.target || 'N/A'}</h6>
-                <h6><strong>Scan ID:</strong> ${scan.scan_id}</h6>
-                <h6><strong>Timestamp:</strong> ${new Date(scan.timestamp).toLocaleString()}</h6>
-                <h6><strong>Risk Level:</strong> <span class="risk-badge risk-${(scan.risk_level || 'Unknown').toUpperCase()}">${scan.risk_level || 'Unknown'}</span></h6>
-                <h6><strong>Severity Score:</strong> ${scan.severity_score || 0}/100</h6>
-            </div>
-            <hr>
-            <pre class="report-text">${scan.formatted_report || 'No formatted report available'}</pre>
-        `;
+    // Use formatted_report if available, otherwise build from JSON
+    if (scan.formatted_report) {
+        // Display pre-formatted report with syntax highlighting
+        modalContent.innerHTML = formatReportHTML(scan.formatted_report, scan);
     } else {
-        // Show JSON report for other scan types
-        const report = scan.full_report_json || {};
-        reportHTML = `
-            <div class="mb-3">
-                <h6><strong>Scan ID:</strong> ${scan.scan_id}</h6>
-                <h6><strong>Type:</strong> ${scan.scan_type}</h6>
-                <h6><strong>Timestamp:</strong> ${new Date(scan.timestamp).toLocaleString()}</h6>
-                <h6><strong>Status:</strong> ${scan.status}</h6>
+        // Fallback to basic display
+        modalContent.innerHTML = `
+            <div class="report-section">
+                <div class="report-header">SCAN INFORMATION</div>
+                <div class="report-line">Scan ID: ${scan.scan_id}</div>
+                <div class="report-line">Type: ${scan.scan_type.toUpperCase()}</div>
+                <div class="report-line">Timestamp: ${new Date(scan.timestamp).toLocaleString()}</div>
+                <div class="report-line">Status: ${(scan.status || 'completed').toUpperCase()}</div>
             </div>
-            <hr>
-            <h6 class="mb-3">Summary:</h6>
-            <p>${scan.summary || 'No summary available'}</p>
-            <hr>
-            <h6 class="mb-3">Severity Breakdown:</h6>
-            <div class="row">
-                <div class="col-md-3">
-                    <div class="card text-center">
-                        <div class="card-body">
-                            <h3 class="text-danger">${(scan.severity_counts || {}).CRITICAL || 0}</h3>
-                            <small>Critical</small>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="card text-center">
-                        <div class="card-body">
-                            <h3 class="text-warning">${(scan.severity_counts || {}).HIGH || 0}</h3>
-                            <small>High</small>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="card text-center">
-                        <div class="card-body">
-                            <h3 class="text-info">${(scan.severity_counts || {}).MEDIUM || 0}</h3>
-                            <small>Medium</small>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="card text-center">
-                        <div class="card-body">
-                            <h3 class="text-secondary">${(scan.severity_counts || {}).LOW || 0}</h3>
-                            <small>Low</small>
-                        </div>
-                    </div>
-                </div>
+            <div class="report-section">
+                <div class="report-header">SUMMARY</div>
+                <div class="report-line">${scan.summary || 'No summary available'}</div>
             </div>
-            <hr>
-            <h6 class="mb-3">Full Report Data:</h6>
-            <pre class="report-text">${JSON.stringify(report, null, 2)}</pre>
         `;
     }
     
-    modalContent.innerHTML = reportHTML;
-    
-    // Show modal
+    // Show the modal
     const modal = new bootstrap.Modal(document.getElementById('scanDetailModal'));
     modal.show();
+}
+
+function formatReportHTML(reportText, scan) {
+    // Convert plain text report to HTML with styling
+    let html = '';
+    const lines = reportText.split('\n');
+    
+    for (let line of lines) {
+        let formattedLine = escapeHtml(line);
+        
+        // Apply styling based on content
+        if (line.match(/^={50,}/)) {
+            // Separator lines
+            formattedLine = `<div class="separator">${formattedLine}</div>`;
+        } else if (line.match(/^\[.*\]$/)) {
+            // Section headers in brackets
+            formattedLine = `<div class="report-header">${formattedLine}</div>`;
+        } else if (line.match(/^(VULNERABILITY|NETWORK|CLOUD|COMPREHENSIVE)/)) {
+            // Main headers
+            formattedLine = `<div class="report-header">${formattedLine}</div>`;
+        } else if (line.match(/^-{50,}/)) {
+            // Sub-separator
+            formattedLine = `<div class="separator">${formattedLine}</div>`;
+        } else if (line.match(/Host:|Target:|Status:|Ping:/)) {
+            // Important fields
+            formattedLine = `<div class="report-line info-text"><strong>${formattedLine}</strong></div>`;
+        } else if (line.match(/Open Ports?:|Closed\/Filtered Ports?:/)) {
+            // Port section headers
+            formattedLine = `<div class="report-subheader">${formattedLine}</div>`;
+        } else if (line.match(/^\s*-\s*\d+\/tcp.*open/i)) {
+            // Open ports
+            formattedLine = `<div class="report-indent port-open">${formattedLine}</div>`;
+        } else if (line.match(/^\s*-\s*\d+\/tcp.*(closed|filtered)/i)) {
+            // Closed/filtered ports
+            formattedLine = `<div class="report-indent port-closed">${formattedLine}</div>`;
+        } else if (line.match(/🔴|CRITICAL/i)) {
+            // Critical severity
+            formattedLine = `<div class="report-line severity-critical">${formattedLine}</div>`;
+        } else if (line.match(/🟠|HIGH/i) && !line.match(/RISK/)) {
+            // High severity
+            formattedLine = `<div class="report-line severity-high">${formattedLine}</div>`;
+        } else if (line.match(/🟡|MEDIUM/i)) {
+            // Medium severity
+            formattedLine = `<div class="report-line severity-medium">${formattedLine}</div>`;
+        } else if (line.match(/🔵|LOW/i)) {
+            // Low severity
+            formattedLine = `<div class="report-line severity-low">${formattedLine}</div>`;
+        } else if (line.match(/⚠️|WARNING|RISK:/i)) {
+            // Warnings
+            formattedLine = `<div class="report-indent warning-text">${formattedLine}</div>`;
+        } else if (line.match(/✓|SUCCESS|SAFE/i)) {
+            // Success messages
+            formattedLine = `<div class="report-line success-text">${formattedLine}</div>`;
+        } else if (line.match(/🚨|IMMEDIATE ACTION/i)) {
+            // Critical warnings
+            formattedLine = `<div class="report-line severity-critical"><strong>${formattedLine}</strong></div>`;
+        } else if (line.match(/^\s{4,}/)) {
+            // Indented content
+            formattedLine = `<div class="report-indent-2">${formattedLine}</div>`;
+        } else if (line.match(/^\s{2,}/)) {
+            // Slightly indented
+            formattedLine = `<div class="report-indent">${formattedLine}</div>`;
+        } else if (line.trim()) {
+            // Regular content
+            formattedLine = `<div class="report-line">${formattedLine}</div>`;
+        } else {
+            // Empty lines
+            formattedLine = '<br>';
+        }
+        
+        html += formattedLine;
+    }
+    
+    return html;
+}
+
+function escapeHtml(text) {
+    const map = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;'
+    };
+    return text.replace(/[&<>"']/g, m => map[m]);
 }
 
 // Download report
