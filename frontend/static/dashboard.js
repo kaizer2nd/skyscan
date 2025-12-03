@@ -69,29 +69,53 @@ async function loadUserInfo() {
 
 // Select scan type
 function selectScanType(type) {
+    console.log('Selecting scan type:', type);
     selectedScanType = type;
     
     // Update card styling
     document.querySelectorAll('.scan-input-card').forEach(card => {
         card.classList.remove('active');
     });
-    document.getElementById(`scanCard-${type}`).classList.add('active');
+    const selectedCard = document.getElementById(`scanCard-${type}`);
+    if (selectedCard) {
+        selectedCard.classList.add('active');
+    }
     
     // Show input form
-    document.getElementById('scanInputForm').style.display = 'block';
+    const inputForm = document.getElementById('scanInputForm');
+    if (inputForm) {
+        inputForm.style.display = 'block';
+    }
     
     // Hide all forms
-    document.getElementById('vulnerabilityForm').style.display = 'none';
-    document.getElementById('networkForm').style.display = 'none';
-    document.getElementById('cloudForm').style.display = 'none';
+    const forms = ['vulnerabilityForm', 'networkForm', 'cloudForm'];
+    forms.forEach(formId => {
+        const form = document.getElementById(formId);
+        if (form) form.style.display = 'none';
+    });
     
     // Show selected form
-    document.getElementById(`${type}Form`).style.display = 'block';
+    const selectedForm = document.getElementById(`${type}Form`);
+    if (selectedForm) {
+        selectedForm.style.display = 'block';
+        console.log('Form displayed:', `${type}Form`);
+    } else {
+        console.error('Form not found:', `${type}Form`);
+    }
 }
 
 // Start vulnerability scan (comprehensive)
 async function startVulnerabilityScan() {
-    const target = document.getElementById('vulnerabilityTarget').value.trim();
+    console.log('startVulnerabilityScan called');
+    const targetInput = document.getElementById('vulnerabilityTarget');
+    if (!targetInput) {
+        console.error('Target input not found');
+        showAlert('Error: Form not loaded properly', 'danger');
+        return;
+    }
+    
+    const target = targetInput.value.trim();
+    console.log('Target:', target);
     
     if (!target) {
         showAlert('Please enter a target URL or IP address', 'warning');
@@ -99,6 +123,7 @@ async function startVulnerabilityScan() {
     }
     
     try {
+        console.log('Sending request to /api/scan/vulnerability');
         const response = await fetch(`${API_BASE_URL}/api/scan/vulnerability`, {
             method: 'POST',
             headers: getAuthHeaders(),
@@ -106,10 +131,11 @@ async function startVulnerabilityScan() {
         });
         
         const data = await response.json();
+        console.log('Response:', data);
         
         if (response.ok) {
-            showAlert(`Scan started: ${data.message}`, 'success');
-            document.getElementById('vulnerabilityTarget').value = '';
+            showAlert(`✓ Scan started successfully! ${data.message}`, 'success');
+            targetInput.value = '';
             
             // Refresh history after a delay
             setTimeout(loadScanHistory, 2000);
@@ -118,14 +144,16 @@ async function startVulnerabilityScan() {
         }
     } catch (error) {
         console.error('Error starting vulnerability scan:', error);
-        showAlert('Failed to start scan', 'danger');
+        showAlert('Failed to start scan. Check console for details.', 'danger');
     }
 }
 
 // Start network scan
 async function startNetworkScan() {
+    console.log('startNetworkScan called');
     const target = document.getElementById('networkTarget').value.trim();
     const scanType = document.getElementById('networkScanType').value;
+    console.log('Network target:', target, 'Type:', scanType);
     
     if (!target) {
         showAlert('Please enter a target IP or CIDR range', 'warning');
@@ -157,6 +185,7 @@ async function startNetworkScan() {
 
 // Start cloud scan
 async function startCloudScan() {
+    console.log('startCloudScan called');
     try {
         const response = await fetch(`${API_BASE_URL}/api/scan/cloud`, {
             method: 'POST',

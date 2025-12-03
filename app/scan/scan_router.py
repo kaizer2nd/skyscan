@@ -7,6 +7,10 @@ from app.database.mongodb import get_database
 from app.scan.vulnerability_scanner import VulnerabilityScanner
 from app.scan.network_scanner import NetworkScanner
 from app.scan.cloud_scanner import CloudScanner
+from app.scan.fingerprint import Fingerprinting
+from app.scan.match_engine import CVEMatcher
+from app.scan.cvss_engine import CVSSEngine
+from app.reports.report_builder import ReportBuilder
 import logging
 import uuid
 
