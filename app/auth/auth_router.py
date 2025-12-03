@@ -20,35 +20,43 @@ router = APIRouter(prefix="/api/auth", tags=["Authentication"])
 @router.post("/register", response_model=User, status_code=status.HTTP_201_CREATED)
 async def register(user: UserCreate, db=Depends(get_database)):
     """Register a new user"""
-    
-    # Check if user already exists
-    existing_user = await db.users.find_one({"email": user.email})
-    if existing_user:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Email already registered"
+    try:
+        # Check if user already exists
+        existing_user = await db.users.find_one({"email": user.email})
+        if existing_user:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Email already registered"
+            )
+        
+        # Create new user
+        hashed_password = get_password_hash(user.password)
+        user_dict = {
+            "email": user.email,
+            "hashed_password": hashed_password,
+            "created_at": datetime.utcnow(),
+            "scan_history": [],
+            "is_active": True
+        }
+        
+        result = await db.users.insert_one(user_dict)
+        created_user = await db.users.find_one({"_id": result.inserted_id})
+        
+        return User(
+            id=str(created_user["_id"]),
+            email=created_user["email"],
+            created_at=created_user["created_at"],
+            is_active=created_user["is_active"],
+            scan_count=len(created_user.get("scan_history", []))
         )
-    
-    # Create new user
-    hashed_password = get_password_hash(user.password)
-    user_dict = {
-        "email": user.email,
-        "hashed_password": hashed_password,
-        "created_at": datetime.utcnow(),
-        "scan_history": [],
-        "is_active": True
-    }
-    
-    result = await db.users.insert_one(user_dict)
-    created_user = await db.users.find_one({"_id": result.inserted_id})
-    
-    return User(
-        id=str(created_user["_id"]),
-        email=created_user["email"],
-        created_at=created_user["created_at"],
-        is_active=created_user["is_active"],
-        scan_count=len(created_user.get("scan_history", []))
-    )
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.exception("Database error during registration")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Internal server error"
+        )
 
 
 @router.post("/login", response_model=Token)
@@ -62,7 +70,7 @@ async def login(
     try:
         logger.info(f"Login attempt for email: {form_data.username}")
         user = await db.users.find_one({"email": form_data.username})
-    except Exception as e:
+    except Exception:
         logger.exception("Database error during login")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
