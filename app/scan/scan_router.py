@@ -521,26 +521,40 @@ def format_network_scan_report(report: Dict[str, Any]) -> Dict[str, str]:
     
     for asset in assets:
         ip = asset.get('ip', 'Unknown')
-        lines.append(f"Host: {ip}")
-        lines.append(f"Status: {'Up' if asset.get('alive', False) else 'Down'}")
+        hostname = asset.get('hostname', '')
         
-        # Ping status
-        if asset.get('ping_response'):
-            lines.append("Ping: Reachable ✓")
+        # Show hostname if available, otherwise just IP
+        if hostname and hostname != 'Unknown':
+            lines.append(f"Host: {hostname} ({ip})")
         else:
-            lines.append("Ping: Not reachable")
+            lines.append(f"Host: {ip}")
         
+        lines.append(f"Status: {'Up' if asset.get('state') == 'up' else 'Down'}")
         lines.append("")
         
-        # Ports
-        open_ports = asset.get('open_ports', [])
+        # Separate ports by state
+        all_ports = asset.get('ports', [])
+        open_ports = [p for p in all_ports if p.get('state') == 'open']
+        closed_filtered_ports = [p for p in all_ports if p.get('state') in ['closed', 'filtered']]
+        
+        # Display open ports
         if open_ports:
             lines.append("Open Ports:")
-            for port in open_ports:
-                service = port.get('service', 'unknown')
-                protocol = port.get('protocol', 'tcp')
-                port_num = port.get('port')
-                lines.append(f"  - {port_num}/{protocol} ({service})")
+            for port_info in open_ports:
+                port_num = port_info.get('port')
+                protocol = port_info.get('protocol', 'tcp')
+                service = port_info.get('service', 'unknown')
+                product = port_info.get('product', '')
+                version = port_info.get('version', '')
+                
+                # Build port line
+                port_line = f"  - {port_num}/{protocol} ({service}"
+                if product:
+                    port_line += f" - {product}"
+                if version:
+                    port_line += f" {version}"
+                port_line += ")"
+                lines.append(port_line)
                 
                 # Risk indicator for sensitive services
                 if port_num in [21, 22, 25, 3306, 445, 3389]:
@@ -550,14 +564,15 @@ def format_network_scan_report(report: Dict[str, Any]) -> Dict[str, str]:
         
         lines.append("")
         
-        # Closed/Filtered ports
-        closed_ports = asset.get('closed_ports', [])
-        if closed_ports:
+        # Display closed/filtered ports
+        if closed_filtered_ports:
             lines.append("Closed/Filtered Ports:")
-            for port in closed_ports[:10]:  # Show first 10
-                lines.append(f"  - {port}/tcp")
-            if len(closed_ports) > 10:
-                lines.append(f"  ... and {len(closed_ports) - 10} more")
+            # Show all closed/filtered ports (not just first 10)
+            for port_info in closed_filtered_ports:
+                port_num = port_info.get('port')
+                protocol = port_info.get('protocol', 'tcp')
+                state = port_info.get('state', 'filtered')
+                lines.append(f"  - {port_num}/{protocol} ({state})")
         
         lines.append("")
         lines.append("-" * 70)
@@ -723,24 +738,42 @@ def format_full_scan_report(report: Dict[str, Any]) -> Dict[str, str]:
     assets = report.get('assets', [])
     for asset in assets:
         ip = asset.get('ip', 'Unknown')
-        lines.append(f"Host: {ip}")
-        lines.append(f"Status: {'Up' if asset.get('alive', False) else 'Down'}")
+        hostname = asset.get('hostname', '')
         
-        if asset.get('ping_response'):
-            lines.append("Ping: Reachable ✓")
+        # Show hostname if available
+        if hostname and hostname != 'Unknown':
+            lines.append(f"Host: {hostname} ({ip})")
+        else:
+            lines.append(f"Host: {ip}")
         
+        lines.append(f"Status: {'Up' if asset.get('state') == 'up' else 'Down'}")
         lines.append("")
         
-        # Ports
-        open_ports = asset.get('open_ports', [])
+        # Separate ports by state
+        all_ports = asset.get('ports', [])
+        open_ports = [p for p in all_ports if p.get('state') == 'open']
+        closed_filtered_ports = [p for p in all_ports if p.get('state') in ['closed', 'filtered']]
+        
+        # Display open ports
         if open_ports:
             lines.append("Open Ports:")
-            for port in open_ports:
-                service = port.get('service', 'unknown')
-                protocol = port.get('protocol', 'tcp')
-                port_num = port.get('port')
-                lines.append(f"  - {port_num}/{protocol} ({service})")
+            for port_info in open_ports:
+                port_num = port_info.get('port')
+                protocol = port_info.get('protocol', 'tcp')
+                service = port_info.get('service', 'unknown')
+                product = port_info.get('product', '')
+                version = port_info.get('version', '')
                 
+                # Build port line
+                port_line = f"  - {port_num}/{protocol} ({service}"
+                if product:
+                    port_line += f" - {product}"
+                if version:
+                    port_line += f" {version}"
+                port_line += ")"
+                lines.append(port_line)
+                
+                # Risk indicator
                 if port_num in [21, 22, 25, 3306, 445, 3389]:
                     lines.append(f"    ⚠️  RISK: {service.upper()} exposed - HIGH")
         else:
@@ -748,10 +781,14 @@ def format_full_scan_report(report: Dict[str, Any]) -> Dict[str, str]:
         
         lines.append("")
         
-        # Closed ports
-        closed_ports = asset.get('closed_ports', [])
-        if closed_ports:
-            lines.append(f"Closed/Filtered: {len(closed_ports)} port(s)")
+        # Display closed/filtered ports
+        if closed_filtered_ports:
+            lines.append("Closed/Filtered Ports:")
+            for port_info in closed_filtered_ports:
+                port_num = port_info.get('port')
+                protocol = port_info.get('protocol', 'tcp')
+                state = port_info.get('state', 'filtered')
+                lines.append(f"  - {port_num}/{protocol} ({state})")
         
         lines.append("")
     
