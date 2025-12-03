@@ -5,6 +5,7 @@ from typing import List, Dict, Any
 import asyncio
 from concurrent.futures import ThreadPoolExecutor
 import random
+import os
 
 logger = logging.getLogger(__name__)
 
@@ -13,7 +14,13 @@ class NetworkScanner:
     """Professional network vulnerability scanner using Nmap"""
     
     def __init__(self):
-        self.nm = nmap.PortScanner()
+        # Specify Nmap path explicitly for Windows
+        nmap_path = r"C:\Program Files (x86)\Nmap\nmap.exe"
+        if os.path.exists(nmap_path):
+            self.nm = nmap.PortScanner(nmap_search_path=(nmap_path,))
+        else:
+            self.nm = nmap.PortScanner()
+            
         self.executor = ThreadPoolExecutor(max_workers=3)
         self.common_ports = '21,22,23,25,53,80,110,111,135,139,143,443,445,993,995,1723,3306,3389,5432,5900,8080,8443'
         self.extended_ports = '1-10000'
