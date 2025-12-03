@@ -26,90 +26,37 @@ A professional-grade vulnerability detection and security assessment platform fo
 - ✅ **Secure Authentication** - JWT-based auth with bcrypt password hashing
 - ✅ **Responsive Design** - Works seamlessly on desktop and mobile
 
-### Technical Excellence
+### Technical Stack
 - **Backend**: Python 3.13, FastAPI, Uvicorn (async)
 - **Database**: MongoDB with Motor (async driver)
 - **Frontend**: HTML5, CSS3, JavaScript (Vanilla), Bootstrap 5
-- **Security**: JWT tokens, bcrypt hashing, environment-based configuration
-- **Deployment**: Docker, Railway (production), easy local setup
+- **Security**: JWT tokens, bcrypt hashing, input validation with Pydantic
+- **Deployment**: Docker, Railway (production)
 
 ## 📁 Project Structure
 
 ```
 skyscan/
-│
 ├── app/                          # Backend application
-│   ├── auth/                     # Authentication system
-│   │   ├── auth_models.py        # User & token Pydantic models
-│   │   ├── auth_service.py       # JWT & bcrypt services
-│   │   └── auth_router.py        # Login/register endpoints
-│   │
-│   ├── users/                    # User management
-│   │   └── users_router.py       # User info & scan history
-│   │
-│   ├── scan/                     # Professional scanning engine
-│   │   ├── network_scanner.py    # Nmap-based network scanner with CVE detection
-│   │   ├── cloud_scanner.py      # Cloud security & compliance scanner
-│   │   ├── fingerprint.py        # Service version fingerprinting
-│   │   ├── match_engine.py       # CVE matching & correlation
-│   │   ├── cvss_engine.py        # CVSS v3 scoring & risk assessment
-│   │   └── scan_router.py        # Scan initiation endpoints
-│   │
+│   ├── auth/                     # Authentication (JWT, bcrypt)
+│   ├── users/                    # User management & scan history
+│   ├── scan/                     # Scanning engine (Nmap, CVE matching, CVSS)
 │   ├── reports/                  # Report generation
-│   │   └── report_builder.py     # Professional report formatting
-│   │
-│   ├── database/                 # Database layer
-│   │   └── mongodb.py            # Async MongoDB connection
-│   │
-│   ├── config.py                 # Environment-based configuration
-│   └── main.py                   # FastAPI application entry point
+│   ├── database/                 # MongoDB async connection
+│   ├── config.py                 # Environment configuration
+│   └── main.py                   # FastAPI application entry
 │
-├── frontend/                     # Modern web interface
-│   ├── index.html                # Landing page with starry background
+├── frontend/                     # Web interface
+│   ├── index.html                # Landing page
 │   ├── dashboard.html            # Security dashboard
-│   ├── login.html                # Authentication pages
-│   ├── register.html
-│   └── static/                   # Assets
-│       ├── styles.css            # Professional styling
-│       ├── starry-bg.js          # Animated background
-│       ├── dashboard.js          # Dashboard logic
-│       └── auth.js               # Authentication handling
+│   ├── login.html / register.html
+│   └── static/                   # CSS, JS assets
 │
 ├── Dockerfile                    # Production Docker image
-├── docker-compose.yml            # Local development setup
+├── docker-compose.yml            # Local development
 ├── requirements.txt              # Python dependencies
-├── runtime.txt                   # Python 3.13 for Railway
-├── run.py                        # Production entry point
-└── .env.example                  # Environment configuration template
-│   │   ├── scan_router.py        # Scan endpoints
-│   │   └── cve_database.json     # CVE data
-│   │
-│   ├── database/                 # Database layer
-│   │   └── mongodb.py            # MongoDB connection
-│   │
-│   ├── reports/                  # Report generation
-│   │   └── report_builder.py     # Report builder
-│   │
-│   ├── config.py                 # Configuration
-│   └── main.py                   # FastAPI application
-│
-├── frontend/                     # Frontend application
-│   ├── index.html                # Landing page
-│   ├── login.html                # Login page
-│   ├── register.html             # Registration page
-│   ├── dashboard.html            # User dashboard
-│   │
-│   └── static/                   # Static assets
-│       ├── styles.css            # Custom styles
-│       ├── auth.js               # Authentication logic
-│       └── dashboard.js          # Dashboard logic
-│
-├── requirements.txt              # Python dependencies
-├── Dockerfile                    # Docker image config
-├── docker-compose.yml            # Docker compose config
-├── .env.example                  # Environment template
-├── .gitignore                    # Git ignore rules
-└── README.md                     # This file
+├── API.md                        # API documentation
+└── .env.example                  # Environment template
 ```
 
 ## 🚀 Quick Start
@@ -212,10 +159,6 @@ Or use Docker Compose:
 docker-compose up --build
 ```
 
-```powershell
-docker-compose up --build
-```
-
 ## 📖 Usage
 
 ### 1. Register Account
@@ -282,22 +225,6 @@ Key endpoints:
 - `POST /api/scan/network` - Initiate network scan
 - `POST /api/scan/cloud` - Initiate cloud scan
 - `GET /api/users/me/scans` - Retrieve scan history
-cd C:\Users\RAKSHIT\OneDrive\Documents\MIT\MINI_PROJECT
-
-# Build and start containers
-docker-compose up --build
-
-# Or run in detached mode
-docker-compose up -d
-```
-
-#### Stop Application
-```powershell
-docker-compose down
-
-# To remove volumes as well
-docker-compose down -v
-```
 
 ## 🔐 API Usage
 
@@ -427,18 +354,6 @@ Authorization: Bearer {access_token}
 }
 ```
 
-## 🧪 Testing with Postman
-
-1. Import the Postman collection: `Vulnerability_Detector_API.postman_collection.json`
-2. Set the `base_url` variable to `http://localhost:8000`
-3. Run the requests in order:
-   - Register User
-   - Login (automatically saves token)
-   - Get User Info
-   - Start Network Scan
-   - Get Scan History
-   - Get Scan Detail
-
 ## 🛠️ Development
 
 ### Running Tests
@@ -448,6 +363,9 @@ pip install pytest pytest-asyncio httpx
 
 # Run tests
 pytest
+
+# Or run the scanner test script
+python test_scanner.py
 ```
 
 ### Code Formatting
@@ -470,43 +388,28 @@ flake8 app/
 mypy app/
 ```
 
+### Testing with Postman
+1. Import `Vulnerability_Detector_API.postman_collection.json`
+2. Set `base_url` variable to `http://localhost:8000`
+3. Run requests in order: Register → Login → Scan → View History
+
 ## 🔧 Configuration
 
 ### Environment Variables
 
 | Variable | Description | Default | Required |
 |----------|-------------|---------|----------|
-| `MONGODB_URL` | MongoDB connection string with credentials | `mongodb://localhost:27017/skyscan` | ✅ |
+| `MONGODB_URL` | MongoDB connection string | `mongodb://localhost:27017/skyscan` | ✅ |
 | `SECRET_KEY` | JWT secret key (min 32 chars) | *Random generated* | ✅ |
 | `DATABASE_NAME` | Database name | `skyscan` | ❌ |
 | `ALGORITHM` | JWT signing algorithm | `HS256` | ❌ |
 | `ACCESS_TOKEN_EXPIRE_MINUTES` | JWT token expiration | `30` | ❌ |
-| `PORT` | Application port (Railway uses this) | `8000` | ❌ |
+| `PORT` | Application port | `8000` | ❌ |
 
 ### Security Best Practices
 - **Never commit `.env`** to version control
 - **Use strong SECRET_KEY**: Generate with `openssl rand -hex 32`
 - **Production MongoDB**: Use authenticated connection strings with TLS
-- **Railway deployment**: Store secrets in environment variables, not code
-
-## 🧪 Testing
-
-### Manual Testing
-Use Postman collection: `Vulnerability_Detector_API.postman_collection.json`
-
-1. Import collection into Postman
-2. Set `base_url` variable to `http://localhost:8000` or production URL
-3. Run requests:
-   - `POST /api/auth/register` - Create account
-   - `POST /api/auth/login` - Get token (auto-saved)
-   - `GET /api/users/me` - Verify authentication
-   - `POST /api/scan/network` - Run network scan
-   - `GET /api/users/me/scans` - View scan history
-
-### API Testing Script
-```powershell
-python test_scanner.py
-```
 
 ## 📈 Architecture
 
@@ -533,84 +436,20 @@ python test_scanner.py
 - **Deployment**: Docker + Railway PaaS
 - **Frontend**: Vanilla JavaScript with modern CSS
 
-## 🤝 Contributing
+## 🚨 Platform Notes
 
-Contributions welcome! Please follow these guidelines:
-
-1. **Fork repository** and create feature branch
-2. **Follow code style**: Use Black formatter and isort
-3. **Add tests** for new features
-4. **Update documentation** for API changes
-5. **Submit pull request** with clear description
-
-## 📄 License
-
-This project is licensed under the MIT License - see LICENSE file for details.
-
-## 🙏 Acknowledgments
-
-- **Nmap Project** for the powerful network scanning engine
-- **FastAPI** for the excellent async Python framework
-- **Railway** for seamless deployment platform
-- **MongoDB** for flexible document storage
-
-## 📞 Support
-
-- **Live Demo**: [skyscan-production.up.railway.app](https://skyscan-production.up.railway.app)
-- **GitHub Issues**: [github.com/kaizer2nd/skyscan/issues](https://github.com/kaizer2nd/skyscan/issues)
-- **Documentation**: See `/docs` endpoint on running instance
-
----
-
-**Built with ❤️ for cybersecurity professionals**
-- ✅ Input validation with Pydantic
-- ✅ SQL injection protection (NoSQL)
-- ✅ Rate limiting ready (can be added)
-
-## 🚨 Important Notes
-
-### Windows Compatibility
+### Windows
 - **Nmap**: Must be installed and in system PATH
 - **MongoDB**: Can run as Windows service or manually
 - **PowerShell**: Use PowerShell (not CMD) for better compatibility
-- **Firewall**: May need to allow MongoDB (port 27017) and FastAPI (port 8000)
 
-### Production Deployment
-Before deploying to production:
-
-1. **Change SECRET_KEY** to a strong random value
-2. **Configure CORS** to specific origins
-3. **Enable HTTPS** with reverse proxy (nginx/IIS)
-4. **Set up MongoDB authentication**
-5. **Configure firewall rules**
-6. **Enable rate limiting**
-7. **Set up monitoring** (logs, metrics)
-8. **Regular CVE database updates**
-
-## 📝 API Documentation
-
-Once the application is running, access:
-- **Interactive API Docs (Swagger)**: http://localhost:8000/docs
-- **Alternative Docs (ReDoc)**: http://localhost:8000/redoc
-
-## 🤝 Contributing
-
-This is a MIT Mini Project. For improvements:
-1. Fork the repository
-2. Create feature branch
-3. Make changes
-4. Submit pull request
-
-## 📜 License
-
-MIT License - See LICENSE file for details
-
-## 👥 Team
-
-**MIT Mini Project - Cybersecurity: Vulnerability Detector**
-
-- Project Report: SY_Minor_Report_Fin[1].pdf
-- Institution: MIT (Maharashtra Institute of Technology)
+### Production Checklist
+1. Change SECRET_KEY to a strong random value
+2. Configure CORS to specific origins
+3. Enable HTTPS with reverse proxy
+4. Set up MongoDB authentication
+5. Enable rate limiting
+6. Set up monitoring (logs, metrics)
 
 ## 🔗 Resources
 
@@ -620,25 +459,26 @@ MIT License - See LICENSE file for details
 - [CVE Database](https://cve.mitre.org/)
 - [CVSS Scoring Guide](https://www.first.org/cvss/)
 
+## 🤝 Contributing
+
+Contributions welcome! Please follow these guidelines:
+
+1. Fork repository and create feature branch
+2. Follow code style: Use Black formatter and isort
+3. Add tests for new features
+4. Update documentation for API changes
+5. Submit pull request with clear description
+
+## 📄 License
+
+This project is licensed under the MIT License - see LICENSE file for details.
+
 ## 📞 Support
 
-For issues or questions:
-1. Check the API documentation at `/docs`
-2. Review this README
-3. Check MongoDB and Nmap installation
-4. Verify firewall settings
-5. Check application logs
-
-## 🎯 Next Steps
-
-After installation:
-1. ✅ Register a new user account
-2. ✅ Login to the dashboard
-3. ✅ Run your first vulnerability scan
-4. ✅ Review the scan results
-5. ✅ Download detailed reports
-6. ✅ Test with Postman collection
+- **Live Demo**: [skyscan-production.up.railway.app](https://skyscan-production.up.railway.app)
+- **GitHub Issues**: [github.com/kaizer2nd/skyscan/issues](https://github.com/kaizer2nd/skyscan/issues)
+- **API Docs**: See `/docs` endpoint on running instance
 
 ---
 
-**Built with ❤️ for Cybersecurity**
+**Built with ❤️ for cybersecurity professionals**
