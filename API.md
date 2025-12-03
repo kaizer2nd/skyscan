@@ -1,16 +1,26 @@
-# API Documentation
+# SkyScan API Documentation
 
 ## Base URL
+
+**Local Development:**
 ```
 http://localhost:8000
 ```
 
+**Production:**
+```
+https://skyscan-production.up.railway.app
+```
+
 ## Authentication
 
-All protected endpoints require JWT authentication:
+All protected endpoints require JWT authentication. Include the token in the Authorization header:
+
 ```
 Authorization: Bearer <access_token>
 ```
+
+Obtain tokens via `/api/auth/login` endpoint.
 
 ---
 

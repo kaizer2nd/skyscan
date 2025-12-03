@@ -1,53 +1,86 @@
-# Vulnerability Detector - Advanced Cybersecurity Platform
+# SkyScan - Professional Vulnerability Detection Platform
 
-[![Python](https://img.shields.io/badge/Python-3.11+-blue.svg)](https://www.python.org/)
-[![FastAPI](https://img.shields.io/badge/FastAPI-0.104+-green.svg)](https://fastapi.tiangolo.com/)
-[![MongoDB](https://img.shields.io/badge/MongoDB-7.0-brightgreen.svg)](https://www.mongodb.com/)
+[![Python](https://img.shields.io/badge/Python-3.13-blue.svg)](https://www.python.org/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.115-green.svg)](https://fastapi.tiangolo.com/)
+[![MongoDB](https://img.shields.io/badge/MongoDB-Latest-brightgreen.svg)](https://www.mongodb.com/)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Deployed on Railway](https://img.shields.io/badge/Deployed-Railway-blueviolet.svg)](https://railway.app/)
 
-A comprehensive vulnerability detection and assessment platform for network infrastructure and cloud environments. Built with FastAPI, MongoDB, and modern scanning technologies.
+A professional-grade vulnerability detection and security assessment platform for network infrastructure and cloud environments. Features advanced scanning capabilities, compliance mapping, and comprehensive vulnerability reporting.
 
-## 🌟 Features
+🔗 **Live Demo**: [SkyScan on Railway](https://skyscan-production.up.railway.app)
 
-### Core Capabilities
-- ✅ **Network Vulnerability Scanning** - Asset discovery using Nmap with automated port scanning
-- ✅ **Cloud Security Assessment** - Configuration analysis for AWS, Azure, and GCP
-- ✅ **Service Fingerprinting** - Automatic identification of software versions
-- ✅ **CVE Matching Engine** - Comprehensive vulnerability database with 10,000+ CVEs
-- ✅ **CVSS Scoring & Prioritization** - Risk assessment using industry standards
-- ✅ **Automated Report Generation** - Detailed vulnerability reports with remediation guidance
-- ✅ **User Dashboard** - Real-time scan tracking and historical analytics
-- ✅ **JWT Authentication** - Secure user authentication with bcrypt password hashing
+## 🌟 Key Features
 
-### Technical Stack
-- **Backend**: Python 3.11, FastAPI, Uvicorn
+### Advanced Scanning Capabilities
+- ✅ **Professional Network Scanning** - Multi-technique Nmap scanning with service detection, OS fingerprinting, and version analysis
+- ✅ **Cloud Security Assessment** - Comprehensive checks for AWS/Azure/GCP with compliance framework mapping (CIS, NIST, PCI-DSS, HIPAA, SOC2)
+- ✅ **Real-time Vulnerability Detection** - Automated CVE correlation based on service versions with risk scoring
+- ✅ **CVSS v3 Scoring** - Professional risk assessment and vulnerability prioritization
+- ✅ **Compliance Reporting** - Automated compliance status for multiple frameworks
+- ✅ **Detailed Remediation Plans** - Step-by-step guidance with prioritized recommendations
+
+### User Experience
+- ✅ **Modern UI** - Starry animated background with professional dashboard
+- ✅ **Real-time Updates** - Live scan progress tracking and history
+- ✅ **Secure Authentication** - JWT-based auth with bcrypt password hashing
+- ✅ **Responsive Design** - Works seamlessly on desktop and mobile
+
+### Technical Excellence
+- **Backend**: Python 3.13, FastAPI, Uvicorn (async)
 - **Database**: MongoDB with Motor (async driver)
-- **Frontend**: HTML5, CSS3, JavaScript, Bootstrap 5
-- **Scanning**: Python-Nmap, custom vulnerability engines
-- **Security**: JWT tokens, bcrypt hashing
-- **Deployment**: Docker, Docker Compose
+- **Frontend**: HTML5, CSS3, JavaScript (Vanilla), Bootstrap 5
+- **Security**: JWT tokens, bcrypt hashing, environment-based configuration
+- **Deployment**: Docker, Railway (production), easy local setup
 
 ## 📁 Project Structure
 
 ```
-MINI_PROJECT/
+skyscan/
 │
 ├── app/                          # Backend application
-│   ├── auth/                     # Authentication module
-│   │   ├── auth_models.py        # User & token models
-│   │   ├── auth_service.py       # JWT & password services
-│   │   └── auth_router.py        # Auth endpoints
+│   ├── auth/                     # Authentication system
+│   │   ├── auth_models.py        # User & token Pydantic models
+│   │   ├── auth_service.py       # JWT & bcrypt services
+│   │   └── auth_router.py        # Login/register endpoints
 │   │
 │   ├── users/                    # User management
-│   │   ├── users_models.py       # User response models
-│   │   └── users_router.py       # User endpoints
+│   │   └── users_router.py       # User info & scan history
 │   │
-│   ├── scan/                     # Vulnerability scanning
-│   │   ├── network_scanner.py    # Network asset discovery
-│   │   ├── cloud_scanner.py      # Cloud config scanner
-│   │   ├── fingerprint.py        # Service fingerprinting
-│   │   ├── match_engine.py       # CVE matching
-│   │   ├── cvss_engine.py        # CVSS scoring
+│   ├── scan/                     # Professional scanning engine
+│   │   ├── network_scanner.py    # Nmap-based network scanner with CVE detection
+│   │   ├── cloud_scanner.py      # Cloud security & compliance scanner
+│   │   ├── fingerprint.py        # Service version fingerprinting
+│   │   ├── match_engine.py       # CVE matching & correlation
+│   │   ├── cvss_engine.py        # CVSS v3 scoring & risk assessment
+│   │   └── scan_router.py        # Scan initiation endpoints
+│   │
+│   ├── reports/                  # Report generation
+│   │   └── report_builder.py     # Professional report formatting
+│   │
+│   ├── database/                 # Database layer
+│   │   └── mongodb.py            # Async MongoDB connection
+│   │
+│   ├── config.py                 # Environment-based configuration
+│   └── main.py                   # FastAPI application entry point
+│
+├── frontend/                     # Modern web interface
+│   ├── index.html                # Landing page with starry background
+│   ├── dashboard.html            # Security dashboard
+│   ├── login.html                # Authentication pages
+│   ├── register.html
+│   └── static/                   # Assets
+│       ├── styles.css            # Professional styling
+│       ├── starry-bg.js          # Animated background
+│       ├── dashboard.js          # Dashboard logic
+│       └── auth.js               # Authentication handling
+│
+├── Dockerfile                    # Production Docker image
+├── docker-compose.yml            # Local development setup
+├── requirements.txt              # Python dependencies
+├── runtime.txt                   # Python 3.13 for Railway
+├── run.py                        # Production entry point
+└── .env.example                  # Environment configuration template
 │   │   ├── scan_router.py        # Scan endpoints
 │   │   └── cve_database.json     # CVE data
 │   │
@@ -82,75 +115,173 @@ MINI_PROJECT/
 ## 🚀 Quick Start
 
 ### Prerequisites
-- **Python 3.11+** installed
-- **MongoDB** installed and running
+- **Python 3.13+** installed
+- **MongoDB** (via Railway for production, or local for development)
 - **Nmap** installed (for network scanning)
-- **Git** (optional)
+- **Git** for version control
 
-### Option 1: Manual Installation (Windows)
+### Local Development Setup
 
-#### Step 1: Install MongoDB
-Download and install MongoDB Community Edition from [mongodb.com](https://www.mongodb.com/try/download/community)
-
-Start MongoDB service:
-```powershell
-# MongoDB should start automatically as a service
-# Or manually start it:
-mongod --dbpath C:\data\db
-```
-
-#### Step 2: Install Nmap
+#### 1. Install Nmap
 Download and install Nmap from [nmap.org](https://nmap.org/download.html)
 
 Add Nmap to system PATH (usually `C:\Program Files (x86)\Nmap`)
 
-#### Step 3: Clone & Setup Project
+#### 2. Clone Repository
 ```powershell
-# Navigate to project directory
-cd C:\Users\RAKSHIT\OneDrive\Documents\MIT\MINI_PROJECT
+git clone https://github.com/kaizer2nd/skyscan.git
+cd skyscan
+```
 
-# Create virtual environment
+#### 3. Create Virtual Environment
+```powershell
 python -m venv venv
-
-# Activate virtual environment
 .\venv\Scripts\Activate.ps1
+```
 
-# Install dependencies
+#### 4. Install Dependencies
+```powershell
 pip install -r requirements.txt
 ```
 
-#### Step 4: Configure Environment
+#### 5. Configure Environment
+Create `.env` file from template:
 ```powershell
-# Copy environment template
-copy .env.example .env
-
-# Edit .env file with your settings
-# MONGODB_URL=mongodb://localhost:27017
-# SECRET_KEY=your-secret-key-change-this-in-production-min-32-chars
+cp .env.example .env
 ```
 
-#### Step 5: Run Application
-```powershell
-# Start the server
-uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+Edit `.env` with your MongoDB connection string:
+```env
+MONGODB_URL=mongodb://localhost:27017/skyscan
+SECRET_KEY=your-secret-key-here
 ```
 
-#### Step 6: Access Application
-Open browser and navigate to:
-- **Homepage**: http://localhost:8000
-- **API Docs**: http://localhost:8000/docs
-- **Login**: http://localhost:8000/login
-- **Dashboard**: http://localhost:8000/dashboard
-
-### Option 2: Docker Installation (Recommended)
-
-#### Prerequisites
-- Docker Desktop for Windows
-- Docker Compose
-
-#### Steps
+#### 6. Run Application
 ```powershell
-# Navigate to project directory
+python run.py
+```
+
+Visit `http://localhost:8000` to access SkyScan.
+
+### Production Deployment (Railway)
+
+SkyScan is deployed on [Railway](https://railway.app) at [skyscan-production.up.railway.app](https://skyscan-production.up.railway.app)
+
+#### Deploy Your Own Instance
+
+1. **Fork Repository**
+```powershell
+# Fork on GitHub, then clone your fork
+git clone https://github.com/YOUR_USERNAME/skyscan.git
+```
+
+2. **Create Railway Project**
+- Visit [railway.app](https://railway.app)
+- Click "New Project" → "Deploy from GitHub"
+- Select your forked repository
+
+3. **Add MongoDB Service**
+- In Railway project, click "New" → "Database" → "Add MongoDB"
+- Copy the connection string from MongoDB service variables
+
+4. **Configure Environment Variables**
+Set these variables in Railway:
+```
+MONGODB_URL=<your-railway-mongodb-connection-string>
+SECRET_KEY=<generate-secure-random-key>
+PORT=8000
+```
+
+5. **Deploy**
+- Railway auto-deploys on push to main branch
+- Build uses `Dockerfile` (installs nmap automatically)
+- Application starts with `run.py`
+
+### Docker Setup (Alternative)
+
+```powershell
+# Build image
+docker build -t skyscan .
+
+# Run container
+docker run -p 8000:8000 -e MONGODB_URL="your-connection-string" skyscan
+```
+
+Or use Docker Compose:
+```powershell
+docker-compose up --build
+```
+
+```powershell
+docker-compose up --build
+```
+
+## 📖 Usage
+
+### 1. Register Account
+- Visit `/register` or click "Register" on homepage
+- Create account with email and secure password
+- Login redirects to dashboard automatically
+
+### 2. Network Scanning
+Scan network infrastructure for vulnerabilities:
+
+```bash
+POST /api/scan/network
+{
+  "targets": "192.168.1.0/24",  # Single IP, range, or CIDR
+  "scan_type": "quick"           # 'quick' or 'comprehensive'
+}
+```
+
+**Features:**
+- **Asset Discovery**: Detects live hosts with OS fingerprinting
+- **Port Analysis**: Scans 22+ common ports (SSH, HTTP, HTTPS, FTP, MySQL, RDP, SMB, etc.)
+- **Service Detection**: Identifies running services with version information
+- **CVE Matching**: Automatically correlates known vulnerabilities with detected services
+- **Risk Scoring**: CVSS v3-based risk assessment for each finding
+- **Compliance Mapping**: Maps vulnerabilities to CIS, NIST, PCI-DSS, HIPAA, SOC2 frameworks
+
+### 3. Cloud Security Scanning
+Assess cloud infrastructure security posture:
+
+```bash
+POST /api/scan/cloud
+{
+  "provider": "aws",             # 'aws', 'azure', or 'gcp'
+  "credentials": {...},          # Cloud provider credentials
+  "region": "us-east-1"
+}
+```
+
+**Checks:**
+- **Storage Security**: Public buckets, versioning, encryption at rest
+- **Network Exposure**: SSH, RDP, database ports open to 0.0.0.0/0
+- **IAM Security**: MFA enforcement, inactive users, overprivileged service accounts
+- **Encryption**: Unencrypted EBS volumes, KMS key rotation
+- **Logging**: CloudTrail, VPC Flow Logs, S3 access logging
+- **Password Policies**: Strength requirements, rotation, expiration
+- **Compliance Assessment**: Automated compliance framework alignment
+- **Risk Scoring**: Weighted risk score (0-100) based on findings
+
+### 4. View Reports
+- Access scan history from dashboard
+- Download detailed PDF/JSON reports
+- Review compliance status across frameworks
+- Track remediation progress
+
+### 5. API Documentation
+Interactive API docs available at:
+- **Swagger UI**: `http://localhost:8000/docs`
+- **ReDoc**: `http://localhost:8000/redoc`
+
+Key endpoints:
+- `POST /api/auth/register` - Create account
+- `POST /api/auth/login` - Get JWT token
+- `GET /api/users/me` - Get user profile
+- `POST /api/scan/network` - Initiate network scan
+- `POST /api/scan/cloud` - Initiate cloud scan
+- `GET /api/users/me/scans` - Retrieve scan history
 cd C:\Users\RAKSHIT\OneDrive\Documents\MIT\MINI_PROJECT
 
 # Build and start containers
@@ -339,37 +470,99 @@ flake8 app/
 mypy app/
 ```
 
-## 🔧 Configuration Options
+## 🔧 Configuration
 
 ### Environment Variables
 
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `MONGODB_URL` | MongoDB connection string | `mongodb://localhost:27017` |
-| `DATABASE_NAME` | Database name | `vuln_detector` |
-| `SECRET_KEY` | JWT secret key | *Must be changed in production* |
-| `ALGORITHM` | JWT algorithm | `HS256` |
-| `ACCESS_TOKEN_EXPIRE_MINUTES` | Token expiry time | `30` |
+| Variable | Description | Default | Required |
+|----------|-------------|---------|----------|
+| `MONGODB_URL` | MongoDB connection string with credentials | `mongodb://localhost:27017/skyscan` | ✅ |
+| `SECRET_KEY` | JWT secret key (min 32 chars) | *Random generated* | ✅ |
+| `DATABASE_NAME` | Database name | `skyscan` | ❌ |
+| `ALGORITHM` | JWT signing algorithm | `HS256` | ❌ |
+| `ACCESS_TOKEN_EXPIRE_MINUTES` | JWT token expiration | `30` | ❌ |
+| `PORT` | Application port (Railway uses this) | `8000` | ❌ |
+
+### Security Best Practices
+- **Never commit `.env`** to version control
+- **Use strong SECRET_KEY**: Generate with `openssl rand -hex 32`
+- **Production MongoDB**: Use authenticated connection strings with TLS
+- **Railway deployment**: Store secrets in environment variables, not code
+
+## 🧪 Testing
+
+### Manual Testing
+Use Postman collection: `Vulnerability_Detector_API.postman_collection.json`
+
+1. Import collection into Postman
+2. Set `base_url` variable to `http://localhost:8000` or production URL
+3. Run requests:
+   - `POST /api/auth/register` - Create account
+   - `POST /api/auth/login` - Get token (auto-saved)
+   - `GET /api/users/me` - Verify authentication
+   - `POST /api/scan/network` - Run network scan
+   - `GET /api/users/me/scans` - View scan history
+
+### API Testing Script
+```powershell
+python test_scanner.py
+```
 
 ## 📈 Architecture
 
-### Scan Workflow
+**SkyScan** uses a modern, scalable architecture:
+
 ```
-1. User triggers scan → API endpoint
-2. Scan request queued → Background task
-3. Asset Discovery → Network scanner (Nmap)
-4. Service Fingerprinting → Pattern matching
-5. CVE Matching → Database lookup
-6. CVSS Scoring → Risk calculation
-7. Report Generation → JSON + Summary
-8. Database Save → User scan history
-9. Dashboard Update → Real-time display
+┌─────────────┐      ┌──────────────┐      ┌─────────────┐
+│  Frontend   │─────▶│   FastAPI    │─────▶│  MongoDB    │
+│  (HTML/JS)  │      │   Backend    │      │  (Railway)  │
+└─────────────┘      └──────────────┘      └─────────────┘
+                            │
+                            ▼
+                     ┌──────────────┐
+                     │    Nmap      │
+                     │   Scanner    │
+                     └──────────────┘
 ```
 
-### Security Measures
-- ✅ Password hashing with bcrypt (cost factor: 12)
-- ✅ JWT token-based authentication
-- ✅ CORS protection
+**Technology Stack:**
+- **Backend**: FastAPI 0.115 (async Python 3.13)
+- **Authentication**: JWT with bcrypt password hashing
+- **Database**: MongoDB with Motor (async driver)
+- **Scanning Engine**: Nmap with subprocess integration
+- **Deployment**: Docker + Railway PaaS
+- **Frontend**: Vanilla JavaScript with modern CSS
+
+## 🤝 Contributing
+
+Contributions welcome! Please follow these guidelines:
+
+1. **Fork repository** and create feature branch
+2. **Follow code style**: Use Black formatter and isort
+3. **Add tests** for new features
+4. **Update documentation** for API changes
+5. **Submit pull request** with clear description
+
+## 📄 License
+
+This project is licensed under the MIT License - see LICENSE file for details.
+
+## 🙏 Acknowledgments
+
+- **Nmap Project** for the powerful network scanning engine
+- **FastAPI** for the excellent async Python framework
+- **Railway** for seamless deployment platform
+- **MongoDB** for flexible document storage
+
+## 📞 Support
+
+- **Live Demo**: [skyscan-production.up.railway.app](https://skyscan-production.up.railway.app)
+- **GitHub Issues**: [github.com/kaizer2nd/skyscan/issues](https://github.com/kaizer2nd/skyscan/issues)
+- **Documentation**: See `/docs` endpoint on running instance
+
+---
+
+**Built with ❤️ for cybersecurity professionals**
 - ✅ Input validation with Pydantic
 - ✅ SQL injection protection (NoSQL)
 - ✅ Rate limiting ready (can be added)
