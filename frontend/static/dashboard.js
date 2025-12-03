@@ -351,28 +351,166 @@ function displayScanDetail(scan) {
     
     // Set modal title
     const scanTypeLabel = scan.scan_type.charAt(0).toUpperCase() + scan.scan_type.slice(1);
-    modalTitle.textContent = `${scanTypeLabel} Scan Report`;
+    modalTitle.textContent = `${scanTypeLabel} Scan Report - ${scan.target || 'N/A'}`;
     
-    // Use formatted_report if available, otherwise build from JSON
-    if (scan.formatted_report) {
-        // Display pre-formatted report with syntax highlighting
-        modalContent.innerHTML = formatReportHTML(scan.formatted_report, scan);
-    } else {
-        // Fallback to basic display
-        modalContent.innerHTML = `
-            <div class="report-section">
-                <div class="report-header">SCAN INFORMATION</div>
-                <div class="report-line">Scan ID: ${scan.scan_id}</div>
-                <div class="report-line">Type: ${scan.scan_type.toUpperCase()}</div>
-                <div class="report-line">Timestamp: ${new Date(scan.timestamp).toLocaleString()}</div>
-                <div class="report-line">Status: ${(scan.status || 'completed').toUpperCase()}</div>
+    let html = '';
+    
+    // Scan Information Header
+    html += `
+        <div class="info-section">
+            <div class="info-row">
+                <span class="label">Scan ID:</span>
+                <span class="value">${scan.scan_id}</span>
             </div>
-            <div class="report-section">
-                <div class="report-header">SUMMARY</div>
-                <div class="report-line">${scan.summary || 'No summary available'}</div>
+            <div class="info-row">
+                <span class="label">Type:</span>
+                <span class="value">${scan.scan_type.toUpperCase()}</span>
+            </div>
+            <div class="info-row">
+                <span class="label">Target:</span>
+                <span class="value">${scan.target || 'N/A'}</span>
+            </div>
+            <div class="info-row">
+                <span class="label">Time:</span>
+                <span class="value">${new Date(scan.timestamp).toLocaleString()}</span>
+            </div>
+            <div class="info-row">
+                <span class="label">Risk:</span>
+                <span class="value risk-${(scan.risk_level || 'NONE').toUpperCase()}">${scan.risk_level || 'NONE'} (${scan.severity_score || 0}/100)</span>
+            </div>
+        </div>
+    `;
+    
+    const report = scan.full_report_json || {};
+    const assets = report.assets || [];
+    const vulnerabilities = report.vulnerabilities || report.vulnerability_details || [];
+    
+    // Show Network Scan Details
+    if (scan.scan_type === 'network' || scan.scan_type === 'full') {
+        html += `<div class="section-header">NETWORK DETAILS</div>`;
+        
+        for (let asset of assets) {
+            const hostname = asset.hostname || asset.ip || 'Unknown';
+            const ip = asset.ip || 'Unknown';
+            
+            html += `
+                <div class="asset-block">
+                    <div class="asset-header">
+                        <span class="host-name">${hostname}</span>
+                        ${hostname !== ip ? `<span class="host-ip">(${ip})</span>` : ''}
+                        <span class="host-status ${asset.state === 'up' ? 'status-up' : 'status-down'}">${asset.state || 'unknown'}</span>
+                    </div>
+            `;
+            
+            // Open Ports
+            const openPorts = (asset.ports || []).filter(p => p.state === 'open');
+            if (openPorts.length > 0) {
+                html += `<div class="ports-section">
+                    <div class="ports-title">Open Ports (${openPorts.length})</div>
+                    <div class="ports-grid">`;
+                
+                for (let port of openPorts) {
+                    const portNum = port.port;
+                    const service = port.service || 'unknown';
+                    const product = port.product || '';
+                    const version = port.version || '';
+                    const isRisky = [21, 22, 25, 3306, 445, 3389].includes(portNum);
+                    
+                    html += `
+                        <div class="port-card ${isRisky ? 'port-risky' : 'port-open'}">
+                            <div class="port-number">${portNum}/${port.protocol || 'tcp'}</div>
+                            <div class="port-service">${service.toUpperCase()}</div>
+                            ${product ? `<div class="port-product">${product} ${version}</div>` : ''}
+                            ${isRisky ? `<div class="port-warning">⚠️ High Risk Service</div>` : ''}
+                        </div>
+                    `;
+                }
+                
+                html += `</div></div>`;
+            }
+            
+            // Closed/Filtered Ports
+            const closedPorts = (asset.ports || []).filter(p => p.state !== 'open');
+            if (closedPorts.length > 0) {
+                html += `<div class="ports-section">
+                    <div class="ports-title-closed">Closed/Filtered Ports (${closedPorts.length})</div>
+                    <div class="closed-ports">`;
+                
+                for (let port of closedPorts.slice(0, 20)) {
+                    html += `<span class="port-closed">${port.port}</span>`;
+                }
+                
+                if (closedPorts.length > 20) {
+                    html += `<span class="port-more">+${closedPorts.length - 20} more</span>`;
+                }
+                
+                html += `</div></div>`;
+            }
+            
+            html += `</div>`;
+        }
+    }
+    
+    // Show Vulnerabilities
+    if (vulnerabilities.length > 0) {
+        html += `<div class="section-header">VULNERABILITIES (${vulnerabilities.length})</div>`;
+        html += `<div class="vulns-container">`;
+        
+        const severityOrder = { 'CRITICAL': 0, 'HIGH': 1, 'MEDIUM': 2, 'LOW': 3 };
+        vulnerabilities.sort((a, b) => 
+            (severityOrder[a.severity] || 99) - (severityOrder[b.severity] || 99)
+        );
+        
+        for (let vuln of vulnerabilities) {
+            const severity = vuln.severity || 'LOW';
+            html += `
+                <div class="vuln-card vuln-${severity.toLowerCase()}">
+                    <div class="vuln-header">
+                        <span class="vuln-severity">${severity}</span>
+                        <span class="vuln-cve">${vuln.cve_id || 'N/A'}</span>
+                        ${vuln.cvss_score ? `<span class="vuln-score">CVSS: ${vuln.cvss_score}</span>` : ''}
+                    </div>
+                    <div class="vuln-description">${vuln.description || 'No description'}</div>
+                    ${vuln.affected_product ? `<div class="vuln-affected">Affected: ${vuln.affected_product}</div>` : ''}
+                    ${vuln.recommendation ? `<div class="vuln-fix">Fix: ${vuln.recommendation}</div>` : ''}
+                </div>
+            `;
+        }
+        
+        html += `</div>`;
+    } else {
+        html += `<div class="no-vulns">✓ No vulnerabilities detected</div>`;
+    }
+    
+    // Severity Summary
+    const counts = scan.severity_counts || {};
+    if (counts.CRITICAL || counts.HIGH || counts.MEDIUM || counts.LOW) {
+        html += `
+            <div class="severity-summary">
+                <div class="summary-title">Issue Breakdown</div>
+                <div class="summary-grid">
+                    <div class="summary-item critical">
+                        <div class="summary-count">${counts.CRITICAL || 0}</div>
+                        <div class="summary-label">Critical</div>
+                    </div>
+                    <div class="summary-item high">
+                        <div class="summary-count">${counts.HIGH || 0}</div>
+                        <div class="summary-label">High</div>
+                    </div>
+                    <div class="summary-item medium">
+                        <div class="summary-count">${counts.MEDIUM || 0}</div>
+                        <div class="summary-label">Medium</div>
+                    </div>
+                    <div class="summary-item low">
+                        <div class="summary-count">${counts.LOW || 0}</div>
+                        <div class="summary-label">Low</div>
+                    </div>
+                </div>
             </div>
         `;
     }
+    
+    modalContent.innerHTML = html;
     
     // Show the modal
     const modal = new bootstrap.Modal(document.getElementById('scanDetailModal'));
