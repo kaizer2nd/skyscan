@@ -349,170 +349,129 @@ function displayScanDetail(scan) {
     const modalContent = document.getElementById('scanDetailContent');
     const modalTitle = document.getElementById('modalTitle');
     
-    // Set modal title
     const scanTypeLabel = scan.scan_type.charAt(0).toUpperCase() + scan.scan_type.slice(1);
-    modalTitle.textContent = `${scanTypeLabel} Scan Report - ${scan.target || 'N/A'}`;
-    
-    let html = '';
-    
-    // Scan Information Header
-    html += `
-        <div class="info-section">
-            <div class="info-row">
-                <span class="label">Scan ID:</span>
-                <span class="value">${scan.scan_id}</span>
-            </div>
-            <div class="info-row">
-                <span class="label">Type:</span>
-                <span class="value">${scan.scan_type.toUpperCase()}</span>
-            </div>
-            <div class="info-row">
-                <span class="label">Target:</span>
-                <span class="value">${scan.target || 'N/A'}</span>
-            </div>
-            <div class="info-row">
-                <span class="label">Time:</span>
-                <span class="value">${new Date(scan.timestamp).toLocaleString()}</span>
-            </div>
-            <div class="info-row">
-                <span class="label">Risk:</span>
-                <span class="value risk-${(scan.risk_level || 'NONE').toUpperCase()}">${scan.risk_level || 'NONE'} (${scan.severity_score || 0}/100)</span>
-            </div>
-        </div>
-    `;
+    modalTitle.textContent = `${scanTypeLabel} Scan Report`;
     
     const report = scan.full_report_json || {};
     const assets = report.assets || [];
     const vulnerabilities = report.vulnerabilities || report.vulnerability_details || [];
     
-    // Show Network Scan Details
-    if (scan.scan_type === 'network' || scan.scan_type === 'full') {
-        html += `<div class="section-header">NETWORK DETAILS</div>`;
-        
+    let html = `
+        <div class="report-card">
+            <div class="card-header">Scan Information</div>
+            <table class="info-table">
+                <tr>
+                    <td class="info-label">Scan ID:</td>
+                    <td class="info-value">${scan.scan_id}</td>
+                </tr>
+                <tr>
+                    <td class="info-label">Type:</td>
+                    <td class="info-value">${scan.scan_type.toUpperCase()}</td>
+                </tr>
+                <tr>
+                    <td class="info-label">Target:</td>
+                    <td class="info-value">${scan.target || 'N/A'}</td>
+                </tr>
+                <tr>
+                    <td class="info-label">Time:</td>
+                    <td class="info-value">${new Date(scan.timestamp).toLocaleString('en-US', {
+                        month: 'numeric',
+                        day: 'numeric',
+                        year: 'numeric',
+                        hour: 'numeric',
+                        minute: '2-digit',
+                        hour12: true
+                    })}</td>
+                </tr>
+                <tr>
+                    <td class="info-label">Risk:</td>
+                    <td class="info-value"><span class="risk-badge risk-${scan.risk_level || 'NONE'}">${scan.risk_level || 'NONE'}</span> (${scan.severity_score || 0}/100)</td>
+                </tr>
+            </table>
+        </div>
+    `;
+    
+    // Network Details
+    if ((scan.scan_type === 'network' || scan.scan_type === 'full') && assets.length > 0) {
         for (let asset of assets) {
             const hostname = asset.hostname || asset.ip || 'Unknown';
             const ip = asset.ip || 'Unknown';
-            
-            html += `
-                <div class="asset-block">
-                    <div class="asset-header">
-                        <span class="host-name">${hostname}</span>
-                        ${hostname !== ip ? `<span class="host-ip">(${ip})</span>` : ''}
-                        <span class="host-status ${asset.state === 'up' ? 'status-up' : 'status-down'}">${asset.state || 'unknown'}</span>
-                    </div>
-            `;
-            
-            // Open Ports
             const openPorts = (asset.ports || []).filter(p => p.state === 'open');
-            if (openPorts.length > 0) {
-                html += `<div class="ports-section">
-                    <div class="ports-title">Open Ports (${openPorts.length})</div>
-                    <div class="ports-grid">`;
-                
-                for (let port of openPorts) {
-                    const portNum = port.port;
-                    const service = port.service || 'unknown';
-                    const product = port.product || '';
-                    const version = port.version || '';
-                    const isRisky = [21, 22, 25, 3306, 445, 3389].includes(portNum);
-                    
-                    html += `
-                        <div class="port-card ${isRisky ? 'port-risky' : 'port-open'}">
-                            <div class="port-number">${portNum}/${port.protocol || 'tcp'}</div>
-                            <div class="port-service">${service.toUpperCase()}</div>
-                            ${product ? `<div class="port-product">${product} ${version}</div>` : ''}
-                            ${isRisky ? `<div class="port-warning">⚠️ High Risk Service</div>` : ''}
-                        </div>
-                    `;
-                }
-                
-                html += `</div></div>`;
-            }
-            
-            // Closed/Filtered Ports
             const closedPorts = (asset.ports || []).filter(p => p.state !== 'open');
-            if (closedPorts.length > 0) {
-                html += `<div class="ports-section">
-                    <div class="ports-title-closed">Closed/Filtered Ports (${closedPorts.length})</div>
-                    <div class="closed-ports">`;
-                
-                for (let port of closedPorts.slice(0, 20)) {
-                    html += `<span class="port-closed">${port.port}</span>`;
-                }
-                
-                if (closedPorts.length > 20) {
-                    html += `<span class="port-more">+${closedPorts.length - 20} more</span>`;
-                }
-                
-                html += `</div></div>`;
-            }
             
-            html += `</div>`;
-        }
-    }
-    
-    // Show Vulnerabilities
-    if (vulnerabilities.length > 0) {
-        html += `<div class="section-header">VULNERABILITIES (${vulnerabilities.length})</div>`;
-        html += `<div class="vulns-container">`;
-        
-        const severityOrder = { 'CRITICAL': 0, 'HIGH': 1, 'MEDIUM': 2, 'LOW': 3 };
-        vulnerabilities.sort((a, b) => 
-            (severityOrder[a.severity] || 99) - (severityOrder[b.severity] || 99)
-        );
-        
-        for (let vuln of vulnerabilities) {
-            const severity = vuln.severity || 'LOW';
             html += `
-                <div class="vuln-card vuln-${severity.toLowerCase()}">
-                    <div class="vuln-header">
-                        <span class="vuln-severity">${severity}</span>
-                        <span class="vuln-cve">${vuln.cve_id || 'N/A'}</span>
-                        ${vuln.cvss_score ? `<span class="vuln-score">CVSS: ${vuln.cvss_score}</span>` : ''}
+                <div class="report-card">
+                    <div class="card-header">NETWORK DETAILS</div>
+                    <div class="host-info">
+                        <div class="host-line"><strong>${hostname}</strong> <span class="host-ip-text">(${ip})</span> <span class="status-badge ${asset.state === 'up' ? 'status-up' : 'status-down'}">${asset.state || 'unknown'}</span></div>
                     </div>
-                    <div class="vuln-description">${vuln.description || 'No description'}</div>
-                    ${vuln.affected_product ? `<div class="vuln-affected">Affected: ${vuln.affected_product}</div>` : ''}
-                    ${vuln.recommendation ? `<div class="vuln-fix">Fix: ${vuln.recommendation}</div>` : ''}
+                    
+                    ${openPorts.length > 0 ? `
+                    <div class="ports-header">Open Ports (${openPorts.length})</div>
+                    <table class="ports-table">
+                        <thead>
+                            <tr>
+                                <th>Port</th>
+                                <th>Expected State</th>
+                                <th>Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${openPorts.map(port => {
+                                const portNum = port.port;
+                                const service = (port.service || 'unknown').toUpperCase();
+                                const product = port.product ? `${port.product} ${port.version || ''}`.trim() : '';
+                                const isRisky = [21, 22, 25, 3306, 445, 3389].includes(portNum);
+                                
+                                return `
+                                    <tr>
+                                        <td><strong>${portNum}</strong></td>
+                                        <td><span class="state-badge state-open">open</span></td>
+                                        <td>
+                                            <div class="service-name">${service}</div>
+                                            ${product ? `<div class="service-product">${product}</div>` : ''}
+                                            ${isRisky ? `<div class="risk-warning">⚠️ High Risk Service</div>` : ''}
+                                        </td>
+                                    </tr>
+                                `;
+                            }).join('')}
+                        </tbody>
+                    </table>
+                    ` : ''}
+                    
+                    ${closedPorts.length > 0 ? `
+                    <div class="ports-header closed-header">Closed/Filtered Ports (${closedPorts.length})</div>
+                    <div class="closed-ports-list">
+                        ${closedPorts.slice(0, 50).map(p => p.port).join(' ')}
+                        ${closedPorts.length > 50 ? ` ... +${closedPorts.length - 50} more` : ''}
+                    </div>
+                    ` : ''}
                 </div>
             `;
         }
-        
-        html += `</div>`;
-    } else {
-        html += `<div class="no-vulns">✓ No vulnerabilities detected</div>`;
     }
     
-    // Severity Summary
-    const counts = scan.severity_counts || {};
-    if (counts.CRITICAL || counts.HIGH || counts.MEDIUM || counts.LOW) {
+    // Vulnerabilities Section
+    if (vulnerabilities.length > 0) {
         html += `
-            <div class="severity-summary">
-                <div class="summary-title">Issue Breakdown</div>
-                <div class="summary-grid">
-                    <div class="summary-item critical">
-                        <div class="summary-count">${counts.CRITICAL || 0}</div>
-                        <div class="summary-label">Critical</div>
-                    </div>
-                    <div class="summary-item high">
-                        <div class="summary-count">${counts.HIGH || 0}</div>
-                        <div class="summary-label">High</div>
-                    </div>
-                    <div class="summary-item medium">
-                        <div class="summary-count">${counts.MEDIUM || 0}</div>
-                        <div class="summary-label">Medium</div>
-                    </div>
-                    <div class="summary-item low">
-                        <div class="summary-count">${counts.LOW || 0}</div>
-                        <div class="summary-label">Low</div>
-                    </div>
+            <div class="report-card">
+                <div class="card-header">Vulnerabilities</div>
+                <div class="vuln-check ${vulnerabilities.length === 0 ? 'vuln-success' : 'vuln-found'}">
+                    ${vulnerabilities.length === 0 ? '✓ No vulnerabilities detected' : `Found ${vulnerabilities.length} vulnerabilities`}
                 </div>
+            </div>
+        `;
+    } else {
+        html += `
+            <div class="report-card">
+                <div class="card-header">Vulnerabilities</div>
+                <div class="vuln-check vuln-success">✓ No vulnerabilities detected</div>
             </div>
         `;
     }
     
     modalContent.innerHTML = html;
     
-    // Show the modal
     const modal = new bootstrap.Modal(document.getElementById('scanDetailModal'));
     modal.show();
 }

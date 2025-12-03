@@ -8,7 +8,7 @@
 
 A professional-grade vulnerability detection and security assessment platform for network infrastructure and cloud environments. Features advanced scanning capabilities, compliance mapping, and comprehensive vulnerability reporting.
 
-🔗 **Live Demo**: [SkyScan on Railway](https://skyscan-production.up.railway.app)
+🔗 **Live Demo**: [SkyScan on Railway](https://skyscan-production.up.railway.app/)
 
 ## 🌟 Key Features
 
