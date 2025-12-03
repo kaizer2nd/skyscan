@@ -507,6 +507,349 @@ def calculate_severity_counts(scan_results: Dict[str, Any]) -> Dict[str, int]:
     return counts
 
 
+def format_network_scan_report(report: Dict[str, Any]) -> Dict[str, str]:
+    """Format network scan results into Nmap-style readable text report"""
+    lines = []
+    lines.append("=" * 70)
+    lines.append("NETWORK SCAN REPORT")
+    lines.append(f"Scan Time: {report.get('scan_info', {}).get('start_time', 'Unknown')}")
+    lines.append("=" * 70)
+    lines.append("")
+    
+    # Asset information
+    assets = report.get('assets', [])
+    
+    for asset in assets:
+        ip = asset.get('ip', 'Unknown')
+        lines.append(f"Host: {ip}")
+        lines.append(f"Status: {'Up' if asset.get('alive', False) else 'Down'}")
+        
+        # Ping status
+        if asset.get('ping_response'):
+            lines.append("Ping: Reachable ✓")
+        else:
+            lines.append("Ping: Not reachable")
+        
+        lines.append("")
+        
+        # Ports
+        open_ports = asset.get('open_ports', [])
+        if open_ports:
+            lines.append("Open Ports:")
+            for port in open_ports:
+                service = port.get('service', 'unknown')
+                protocol = port.get('protocol', 'tcp')
+                port_num = port.get('port')
+                lines.append(f"  - {port_num}/{protocol} ({service})")
+                
+                # Risk indicator for sensitive services
+                if port_num in [21, 22, 25, 3306, 445, 3389]:
+                    lines.append(f"    ⚠️  RISK: {service.upper()} service exposed - HIGH")
+        else:
+            lines.append("Open Ports: None detected")
+        
+        lines.append("")
+        
+        # Closed/Filtered ports
+        closed_ports = asset.get('closed_ports', [])
+        if closed_ports:
+            lines.append("Closed/Filtered Ports:")
+            for port in closed_ports[:10]:  # Show first 10
+                lines.append(f"  - {port}/tcp")
+            if len(closed_ports) > 10:
+                lines.append(f"  ... and {len(closed_ports) - 10} more")
+        
+        lines.append("")
+        lines.append("-" * 70)
+        lines.append("")
+    
+    # Vulnerabilities
+    vulnerabilities = report.get('vulnerabilities', [])
+    if vulnerabilities:
+        lines.append("DETECTED VULNERABILITIES")
+        lines.append("-" * 70)
+        
+        for vuln in vulnerabilities[:10]:  # Show top 10
+            severity = vuln.get('severity', 'UNKNOWN')
+            cve_id = vuln.get('cve_id', 'N/A')
+            description = vuln.get('description', 'No description')
+            cvss_score = vuln.get('cvss_score', 0)
+            
+            # Severity emoji
+            emoji = "🔴" if severity == "CRITICAL" else "🟠" if severity == "HIGH" else "🟡" if severity == "MEDIUM" else "🔵"
+            
+            lines.append(f"{emoji} {severity} - {cve_id}")
+            lines.append(f"   CVSS Score: {cvss_score}")
+            lines.append(f"   {description[:100]}...")
+            lines.append(f"   Affected: {vuln.get('affected_product', 'Unknown')}")
+            lines.append("")
+        
+        if len(vulnerabilities) > 10:
+            lines.append(f"... and {len(vulnerabilities) - 10} more vulnerabilities")
+            lines.append("")
+    
+    # Risk assessment
+    risk_assessment = report.get('risk_assessment', {})
+    lines.append("OVERALL RISK ASSESSMENT")
+    lines.append("-" * 70)
+    lines.append(f"Risk Score: {risk_assessment.get('overall_score', 0)}/100")
+    lines.append(f"Risk Level: {risk_assessment.get('risk_level', 'Unknown').upper()}")
+    lines.append("")
+    
+    # Severity breakdown
+    severity_counts = report.get('severity_counts', {})
+    if any(severity_counts.values()):
+        lines.append("Issue Breakdown:")
+        lines.append(f"    🔴 Critical: {severity_counts.get('CRITICAL', 0)}")
+        lines.append(f"    🟠 High: {severity_counts.get('HIGH', 0)}")
+        lines.append(f"    🟡 Medium: {severity_counts.get('MEDIUM', 0)}")
+        lines.append(f"    🔵 Low: {severity_counts.get('LOW', 0)}")
+    
+    lines.append("=" * 70)
+    
+    full_text = "\n".join(lines)
+    
+    # Create summary
+    total_assets = len(assets)
+    total_vulns = len(vulnerabilities)
+    risk_level = risk_assessment.get('risk_level', 'Unknown')
+    
+    summary = (f"Network scan completed. {total_assets} host(s) discovered, "
+               f"{total_vulns} vulnerabilities found. Risk: {risk_level.upper()}")
+    
+    return {
+        'summary': summary,
+        'full_text': full_text
+    }
+
+
+def format_cloud_scan_report(report: Dict[str, Any]) -> Dict[str, str]:
+    """Format cloud scan results into readable text report"""
+    lines = []
+    lines.append("=" * 70)
+    lines.append("CLOUD SECURITY SCAN REPORT")
+    lines.append(f"Scan Time: {report.get('scan_info', {}).get('start_time', 'Unknown')}")
+    lines.append("=" * 70)
+    lines.append("")
+    
+    # Vulnerabilities/Findings
+    vulnerabilities = report.get('vulnerabilities', [])
+    if vulnerabilities:
+        lines.append("SECURITY FINDINGS")
+        lines.append("-" * 70)
+        
+        for vuln in vulnerabilities:
+            severity = vuln.get('severity', 'UNKNOWN')
+            description = vuln.get('description', 'No description')
+            resource = vuln.get('affected_product', 'Unknown resource')
+            service = vuln.get('service', 'Unknown service')
+            
+            # Severity emoji
+            emoji = "🔴" if severity == "CRITICAL" else "🟠" if severity == "HIGH" else "🟡" if severity == "MEDIUM" else "🔵"
+            
+            lines.append(f"{emoji} {severity} - {service}")
+            lines.append(f"   Resource: {resource}")
+            lines.append(f"   Issue: {description}")
+            lines.append("")
+    else:
+        lines.append("✓ No security findings detected")
+        lines.append("")
+    
+    # SSL/TLS Checks
+    lines.append("SSL/TLS SECURITY")
+    lines.append("-" * 70)
+    
+    # Check if any SSL-related findings exist
+    ssl_issues = [v for v in vulnerabilities if 'certificate' in v.get('description', '').lower() or 
+                  'tls' in v.get('description', '').lower() or 'ssl' in v.get('description', '').lower()]
+    
+    if ssl_issues:
+        for issue in ssl_issues:
+            lines.append(f"⚠️  {issue.get('description')}")
+            lines.append(f"    Risk: {issue.get('severity')}")
+            lines.append("")
+    else:
+        lines.append("✓ No SSL/TLS issues detected")
+        lines.append("")
+    
+    # Risk assessment
+    risk_assessment = report.get('risk_assessment', {})
+    lines.append("OVERALL RISK ASSESSMENT")
+    lines.append("-" * 70)
+    lines.append(f"Risk Score: {risk_assessment.get('overall_score', 0)}/100")
+    lines.append(f"Risk Level: {risk_assessment.get('risk_level', 'Unknown').upper()}")
+    lines.append("")
+    
+    # Severity breakdown
+    severity_counts = report.get('severity_counts', {})
+    if any(severity_counts.values()):
+        lines.append("Issue Breakdown:")
+        lines.append(f"    🔴 Critical: {severity_counts.get('CRITICAL', 0)}")
+        lines.append(f"    🟠 High: {severity_counts.get('HIGH', 0)}")
+        lines.append(f"    🟡 Medium: {severity_counts.get('MEDIUM', 0)}")
+        lines.append(f"    🔵 Low: {severity_counts.get('LOW', 0)}")
+    
+    lines.append("=" * 70)
+    
+    full_text = "\n".join(lines)
+    
+    # Create summary
+    total_findings = len(vulnerabilities)
+    risk_level = risk_assessment.get('risk_level', 'Unknown')
+    
+    summary = (f"Cloud scan completed. {total_findings} security finding(s) detected. "
+               f"Risk: {risk_level.upper()}")
+    
+    return {
+        'summary': summary,
+        'full_text': full_text
+    }
+
+
+def format_full_scan_report(report: Dict[str, Any]) -> Dict[str, str]:
+    """Format full scan (network + cloud) results into comprehensive readable text report"""
+    lines = []
+    lines.append("=" * 70)
+    lines.append("COMPREHENSIVE SECURITY SCAN REPORT")
+    lines.append("(Network + Cloud)")
+    lines.append(f"Scan Time: {report.get('scan_info', {}).get('start_time', 'Unknown')}")
+    lines.append("=" * 70)
+    lines.append("")
+    
+    # Network findings
+    lines.append("[NETWORK SECURITY]")
+    lines.append("-" * 70)
+    
+    assets = report.get('assets', [])
+    for asset in assets:
+        ip = asset.get('ip', 'Unknown')
+        lines.append(f"Host: {ip}")
+        lines.append(f"Status: {'Up' if asset.get('alive', False) else 'Down'}")
+        
+        if asset.get('ping_response'):
+            lines.append("Ping: Reachable ✓")
+        
+        lines.append("")
+        
+        # Ports
+        open_ports = asset.get('open_ports', [])
+        if open_ports:
+            lines.append("Open Ports:")
+            for port in open_ports:
+                service = port.get('service', 'unknown')
+                protocol = port.get('protocol', 'tcp')
+                port_num = port.get('port')
+                lines.append(f"  - {port_num}/{protocol} ({service})")
+                
+                if port_num in [21, 22, 25, 3306, 445, 3389]:
+                    lines.append(f"    ⚠️  RISK: {service.upper()} exposed - HIGH")
+        else:
+            lines.append("Open Ports: None")
+        
+        lines.append("")
+        
+        # Closed ports
+        closed_ports = asset.get('closed_ports', [])
+        if closed_ports:
+            lines.append(f"Closed/Filtered: {len(closed_ports)} port(s)")
+        
+        lines.append("")
+    
+    # All vulnerabilities (network + cloud)
+    lines.append("[DETECTED VULNERABILITIES]")
+    lines.append("-" * 70)
+    
+    vulnerabilities = report.get('vulnerabilities', [])
+    if vulnerabilities:
+        # Group by severity
+        critical = [v for v in vulnerabilities if v.get('severity') == 'CRITICAL']
+        high = [v for v in vulnerabilities if v.get('severity') == 'HIGH']
+        medium = [v for v in vulnerabilities if v.get('severity') == 'MEDIUM']
+        low = [v for v in vulnerabilities if v.get('severity') == 'LOW']
+        
+        if critical:
+            lines.append("🔴 CRITICAL ISSUES:")
+            for vuln in critical[:5]:
+                lines.append(f"   • {vuln.get('description', 'Unknown')[:80]}")
+                lines.append(f"     CVE: {vuln.get('cve_id', 'N/A')} | CVSS: {vuln.get('cvss_score', 0)}")
+            if len(critical) > 5:
+                lines.append(f"   ... and {len(critical) - 5} more critical issues")
+            lines.append("")
+        
+        if high:
+            lines.append("🟠 HIGH SEVERITY:")
+            for vuln in high[:5]:
+                lines.append(f"   • {vuln.get('description', 'Unknown')[:80]}")
+            if len(high) > 5:
+                lines.append(f"   ... and {len(high) - 5} more high severity issues")
+            lines.append("")
+        
+        if medium:
+            lines.append(f"🟡 MEDIUM SEVERITY: {len(medium)} issue(s)")
+            lines.append("")
+        
+        if low:
+            lines.append(f"🔵 LOW SEVERITY: {len(low)} issue(s)")
+            lines.append("")
+    else:
+        lines.append("✓ No vulnerabilities detected")
+        lines.append("")
+    
+    # Overall risk assessment
+    lines.append("[OVERALL RISK ASSESSMENT]")
+    lines.append("-" * 70)
+    
+    risk_assessment = report.get('risk_assessment', {})
+    risk_score = risk_assessment.get('overall_score', 0)
+    risk_level = risk_assessment.get('risk_level', 'Unknown')
+    
+    lines.append(f"Risk Score: {risk_score}/100")
+    lines.append(f"Risk Level: {risk_level.upper()}")
+    lines.append("")
+    
+    # Risk recommendations
+    if risk_score >= 70:
+        lines.append("🚨 HIGH RISK - IMMEDIATE ACTION REQUIRED!")
+        lines.append("    • Critical vulnerabilities present")
+        lines.append("    • System at significant risk")
+        lines.append("    • Address issues immediately")
+    elif risk_score >= 40:
+        lines.append("⚠️  MEDIUM RISK - Address soon")
+        lines.append("    • Multiple security issues detected")
+        lines.append("    • Plan remediation within 30 days")
+    else:
+        lines.append("✓ LOW RISK - Good security posture")
+        lines.append("    • No critical issues detected")
+        lines.append("    • Continue monitoring")
+    
+    lines.append("")
+    
+    # Severity breakdown
+    severity_counts = report.get('severity_counts', {})
+    if any(severity_counts.values()):
+        lines.append("Issue Breakdown:")
+        lines.append(f"    🔴 Critical: {severity_counts.get('CRITICAL', 0)}")
+        lines.append(f"    🟠 High: {severity_counts.get('HIGH', 0)}")
+        lines.append(f"    🟡 Medium: {severity_counts.get('MEDIUM', 0)}")
+        lines.append(f"    🔵 Low: {severity_counts.get('LOW', 0)}")
+    
+    lines.append("=" * 70)
+    
+    full_text = "\n".join(lines)
+    
+    # Create summary
+    total_assets = len(assets)
+    total_vulns = len(vulnerabilities)
+    
+    summary = (f"Full scan completed. {total_assets} host(s), {total_vulns} vulnerabilities. "
+               f"Risk: {risk_level.upper()} ({risk_score}/100)")
+    
+    return {
+        'summary': summary,
+        'full_text': full_text
+    }
+
+
 async def perform_network_scan(
     scan_id: str,
     target: str,
@@ -549,16 +892,21 @@ async def perform_network_scan(
             remediation_plan=remediation_plan
         )
         
-        summary = report_builder.build_summary(report)
+        # Format the report in Nmap-style
+        formatted_report = format_network_scan_report(report)
         
         # Save to database
         scan_record = {
             'scan_id': scan_id,
             'timestamp': datetime.utcnow(),
             'scan_type': 'network',
-            'summary': summary,
+            'target': target,
+            'summary': formatted_report['summary'],
+            'severity_score': risk_assessment.get('overall_score', 0),
+            'risk_level': risk_assessment.get('risk_level', 'Unknown'),
             'severity_counts': match_results['severity_counts'],
             'full_report_json': report,
+            'formatted_report': formatted_report['full_text'],
             'status': 'completed'
         }
         
@@ -578,9 +926,13 @@ async def perform_network_scan(
                 'scan_id': scan_id,
                 'timestamp': datetime.utcnow(),
                 'scan_type': 'network',
+                'target': target,
                 'summary': f"Scan failed: {str(e)}",
-                'severity_counts': {},
+                'severity_score': 0,
+                'risk_level': 'Unknown',
+                'severity_counts': {'CRITICAL': 0, 'HIGH': 0, 'MEDIUM': 0, 'LOW': 0},
                 'full_report_json': {},
+                'formatted_report': '',
                 'status': 'failed'
             }}}
         )
@@ -611,7 +963,7 @@ async def perform_cloud_scan(
                 'cve_id': 'CONFIG-ISSUE',
                 'description': finding['description'],
                 'severity': finding['severity'],
-                'cvss_score': self._severity_to_cvss(finding['severity']),
+                'cvss_score': _severity_to_cvss(finding['severity']),
                 'affected_product': finding['resource'],
                 'service': finding['type'],
                 'asset_ip': 'cloud-resource'
@@ -631,16 +983,21 @@ async def perform_cloud_scan(
             remediation_plan=remediation_plan
         )
         
-        summary = report_builder.build_summary(report)
+        # Format the report
+        formatted_report = format_cloud_scan_report(report)
         
         # Save to database
         scan_record = {
             'scan_id': scan_id,
             'timestamp': datetime.utcnow(),
             'scan_type': 'cloud',
-            'summary': summary,
+            'target': 'Cloud Infrastructure',
+            'summary': formatted_report['summary'],
+            'severity_score': risk_assessment.get('overall_score', 0),
+            'risk_level': risk_assessment.get('risk_level', 'Unknown'),
             'severity_counts': scan_results.get('severity_breakdown', {}),
             'full_report_json': report,
+            'formatted_report': formatted_report['full_text'],
             'status': 'completed'
         }
         
@@ -659,9 +1016,13 @@ async def perform_cloud_scan(
                 'scan_id': scan_id,
                 'timestamp': datetime.utcnow(),
                 'scan_type': 'cloud',
+                'target': 'Cloud Infrastructure',
                 'summary': f"Scan failed: {str(e)}",
-                'severity_counts': {},
+                'severity_score': 0,
+                'risk_level': 'Unknown',
+                'severity_counts': {'CRITICAL': 0, 'HIGH': 0, 'MEDIUM': 0, 'LOW': 0},
                 'full_report_json': {},
+                'formatted_report': '',
                 'status': 'failed'
             }}}
         )
@@ -723,7 +1084,8 @@ async def perform_full_scan(
             remediation_plan=remediation_plan
         )
         
-        summary = report_builder.build_summary(report)
+        # Format the report
+        formatted_report = format_full_scan_report(report)
         
         # Calculate combined severity counts
         severity_counts = {'CRITICAL': 0, 'HIGH': 0, 'MEDIUM': 0, 'LOW': 0}
@@ -736,9 +1098,13 @@ async def perform_full_scan(
             'scan_id': scan_id,
             'timestamp': datetime.utcnow(),
             'scan_type': 'full',
-            'summary': summary,
+            'target': target,
+            'summary': formatted_report['summary'],
+            'severity_score': risk_assessment.get('overall_score', 0),
+            'risk_level': risk_assessment.get('risk_level', 'Unknown'),
             'severity_counts': severity_counts,
             'full_report_json': report,
+            'formatted_report': formatted_report['full_text'],
             'status': 'completed'
         }
         
@@ -757,9 +1123,13 @@ async def perform_full_scan(
                 'scan_id': scan_id,
                 'timestamp': datetime.utcnow(),
                 'scan_type': 'full',
+                'target': target,
                 'summary': f"Scan failed: {str(e)}",
-                'severity_counts': {},
+                'severity_score': 0,
+                'risk_level': 'Unknown',
+                'severity_counts': {'CRITICAL': 0, 'HIGH': 0, 'MEDIUM': 0, 'LOW': 0},
                 'full_report_json': {},
+                'formatted_report': '',
                 'status': 'failed'
             }}}
         )
