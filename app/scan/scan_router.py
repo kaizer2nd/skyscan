@@ -929,6 +929,16 @@ async def perform_network_scan(
             remediation_plan=remediation_plan
         )
         
+        # Add scan info for formatting
+        report['scan_info'] = {
+            'start_time': datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S UTC'),
+            'target': target,
+            'scan_id': scan_id
+        }
+        report['assets'] = fingerprinted_assets
+        report['vulnerabilities'] = prioritized_vulns
+        report['severity_counts'] = match_results['severity_counts']
+        
         # Format the report in Nmap-style
         formatted_report = format_network_scan_report(report)
         
@@ -1019,6 +1029,14 @@ async def perform_cloud_scan(
             risk_assessment=risk_assessment,
             remediation_plan=remediation_plan
         )
+        
+        # Add scan info and data for formatting
+        report['scan_info'] = {
+            'start_time': datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S UTC'),
+            'scan_id': scan_id
+        }
+        report['vulnerabilities'] = vulnerabilities
+        report['severity_counts'] = scan_results.get('severity_breakdown', {})
         
         # Format the report
         formatted_report = format_cloud_scan_report(report)
@@ -1120,6 +1138,16 @@ async def perform_full_scan(
             risk_assessment=risk_assessment,
             remediation_plan=remediation_plan
         )
+        
+        # Add scan info and data for formatting
+        report['scan_info'] = {
+            'start_time': datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S UTC'),
+            'target': target,
+            'scan_id': scan_id
+        }
+        report['assets'] = fingerprinted_assets
+        report['vulnerabilities'] = prioritized_vulns
+        report['severity_counts'] = severity_counts
         
         # Format the report
         formatted_report = format_full_scan_report(report)
