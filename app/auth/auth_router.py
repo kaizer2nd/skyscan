@@ -59,7 +59,15 @@ async def login(
     """Login and get JWT token"""
     
     # Find user
-    user = await db.users.find_one({"email": form_data.username})
+    try:
+        logger.info(f"Login attempt for email: {form_data.username}")
+        user = await db.users.find_one({"email": form_data.username})
+    except Exception as e:
+        logger.exception("Database error during login")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Internal server error"
+        )
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
