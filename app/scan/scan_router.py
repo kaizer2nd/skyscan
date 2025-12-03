@@ -4,18 +4,20 @@ from typing import Optional, Dict, Any
 from datetime import datetime
 from app.auth.auth_service import get_current_user_email
 from app.database.mongodb import get_database
+from app.scan.vulnerability_scanner import VulnerabilityScanner
 from app.scan.network_scanner import NetworkScanner
 from app.scan.cloud_scanner import CloudScanner
-from app.scan.fingerprint import Fingerprinting
-from app.scan.match_engine import CVEMatcher
-from app.scan.cvss_engine import CVSSEngine
-from app.reports.report_builder import ReportBuilder
 import logging
 import uuid
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/scan", tags=["Vulnerability Scanning"])
+
+
+class VulnerabilityScanRequest(BaseModel):
+    """Industry-standard vulnerability scan request"""
+    target: str  # URL or IP address
 
 
 class NetworkScanRequest(BaseModel):
@@ -34,6 +36,40 @@ class ScanResponse(BaseModel):
     scan_id: str
     status: str
     message: str
+
+
+@router.post("/vulnerability", response_model=ScanResponse)
+async def scan_vulnerability(
+    request: VulnerabilityScanRequest,
+    background_tasks: BackgroundTasks,
+    current_user_email: str = Depends(get_current_user_email),
+    db=Depends(get_database)
+):
+    """
+    Perform industry-standard comprehensive vulnerability scan
+    - Port scanning (11 common ports)
+    - HTTP header security analysis
+    - SSL/TLS certificate check
+    - Directory/endpoint discovery
+    - Exposed sensitive files check
+    - SQL injection probing
+    """
+    scan_id = str(uuid.uuid4())
+    
+    # Start scan in background
+    background_tasks.add_task(
+        perform_vulnerability_scan,
+        scan_id=scan_id,
+        target=request.target,
+        user_email=current_user_email,
+        db=db
+    )
+    
+    return ScanResponse(
+        scan_id=scan_id,
+        status="started",
+        message=f"Comprehensive vulnerability scan initiated for {request.target}"
+    )
 
 
 @router.post("/network", response_model=ScanResponse)
@@ -119,6 +155,241 @@ async def scan_full(
         status="started",
         message="Full vulnerability scan initiated"
     )
+
+
+async def perform_vulnerability_scan(
+    scan_id: str,
+    target: str,
+    user_email: str,
+    db
+):
+    """Perform comprehensive vulnerability scan and save results"""
+    try:
+        logger.info(f"Starting vulnerability scan {scan_id} for user {user_email} on target {target}")
+        
+        # Initialize scanner
+        scanner = VulnerabilityScanner()
+        
+        # Perform comprehensive scan
+        scan_results = await scanner.scan(target)
+        
+        # Check if scan had errors
+        if 'error' in scan_results:
+            raise Exception(scan_results['error'])
+        
+        # Format the report
+        formatted_report = format_vulnerability_report(scan_results)
+        
+        # Calculate severity counts
+        severity_counts = calculate_severity_counts(scan_results)
+        
+        # Save to database
+        scan_record = {
+            'scan_id': scan_id,
+            'timestamp': datetime.utcnow(),
+            'scan_type': 'vulnerability',
+            'target': scan_results.get('target'),
+            'summary': formatted_report['summary'],
+            'severity_score': scan_results.get('severity_score', 0),
+            'risk_level': scan_results.get('risk_level', 'Unknown'),
+            'severity_counts': severity_counts,
+            'full_report_json': scan_results,
+            'formatted_report': formatted_report['full_text'],
+            'status': 'completed'
+        }
+        
+        await db.users.update_one(
+            {'email': user_email},
+            {'$push': {'scan_history': scan_record}}
+        )
+        
+        logger.info(f"Vulnerability scan {scan_id} completed successfully")
+        
+    except Exception as e:
+        logger.error(f"Vulnerability scan {scan_id} failed: {e}")
+        # Save error status
+        await db.users.update_one(
+            {'email': user_email},
+            {'$push': {'scan_history': {
+                'scan_id': scan_id,
+                'timestamp': datetime.utcnow(),
+                'scan_type': 'vulnerability',
+                'target': target,
+                'summary': f"Scan failed: {str(e)}",
+                'severity_score': 0,
+                'risk_level': 'Unknown',
+                'severity_counts': {'CRITICAL': 0, 'HIGH': 0, 'MEDIUM': 0, 'LOW': 0},
+                'full_report_json': {},
+                'formatted_report': '',
+                'status': 'failed'
+            }}}
+        )
+
+
+def format_vulnerability_report(scan_results: Dict[str, Any]) -> Dict[str, str]:
+    """Format scan results into readable text report"""
+    lines = []
+    lines.append("=" * 70)
+    lines.append("CLOUD VULNERABILITY SCAN REPORT")
+    lines.append(f"Target: {scan_results.get('target', 'Unknown')}")
+    lines.append(f"IP Address: {scan_results.get('ip', 'Unknown')}")
+    lines.append(f"Scan Time: {scan_results.get('timestamp', 'Unknown')}")
+    lines.append("=" * 70)
+    lines.append("")
+    
+    checks = scan_results.get('checks', {})
+    
+    # [1] Port Scan Results
+    lines.append("[1] PORT SCAN RESULTS")
+    lines.append("-" * 70)
+    port_scan = checks.get('port_scan', {})
+    for port_info in port_scan.get('ports', []):
+        status = port_info['status'].upper()
+        lines.append(f"    Port {port_info['port']} ({port_info['service']}): {status}")
+    lines.append(f"    Summary: {port_scan.get('open_count', 0)} open, "
+                f"{port_scan.get('closed_count', 0)} closed, "
+                f"{port_scan.get('filtered_count', 0)} filtered")
+    lines.append("")
+    
+    # [2] Header Security Analysis
+    lines.append("[2] HEADER SECURITY ANALYSIS")
+    lines.append("-" * 70)
+    headers = checks.get('header_security', {})
+    if headers.get('error'):
+        lines.append(f"    Error: {headers['error']}")
+    else:
+        if headers.get('missing_headers'):
+            lines.append("    Missing Headers:")
+            for h in headers['missing_headers']:
+                lines.append(f"        - {h['header']} ({h['description']})")
+        if headers.get('risky_headers'):
+            lines.append("    Risky Headers:")
+            for h in headers['risky_headers']:
+                lines.append(f"        - {h['header']}: {h['issue']}")
+                lines.append(f"          Value: {h['value']}")
+        lines.append(f"    Status: {headers.get('status', 'Unknown')}")
+    lines.append("")
+    
+    # [3] SSL/TLS Certificate
+    lines.append("[3] SSL/TLS CERTIFICATE")
+    lines.append("-" * 70)
+    ssl = checks.get('ssl_certificate', {})
+    if ssl.get('is_https'):
+        lines.append(f"    Status: {ssl.get('status', 'Unknown')}")
+        lines.append(f"    Rating: {ssl.get('rating', 'Unknown')}")
+        if ssl.get('days_until_expiry') is not None:
+            lines.append(f"    Expires In: {ssl['days_until_expiry']} days")
+        if ssl.get('error'):
+            lines.append(f"    Error: {ssl['error']}")
+    else:
+        lines.append(f"    {ssl.get('message', 'Not an HTTPS URL')}")
+    lines.append("")
+    
+    # [4] Directory Discovery
+    lines.append("[4] DIRECTORY DISCOVERY")
+    lines.append("-" * 70)
+    directories = checks.get('directory_discovery', {})
+    for endpoint in directories.get('endpoints', []):
+        status = "Found" if endpoint.get('found') else "Not Found"
+        code = endpoint.get('status_code', 0)
+        lines.append(f"    {endpoint['path']} → {code} {status}")
+    lines.append(f"    Summary: {directories.get('found_count', 0)} found, "
+                f"{directories.get('not_found_count', 0)} not found")
+    lines.append("")
+    
+    # [5] Exposed Files
+    lines.append("[5] EXPOSED SENSITIVE FILES")
+    lines.append("-" * 70)
+    files = checks.get('exposed_files', {})
+    for file_info in files.get('files', []):
+        status = "⚠️ EXPOSED" if file_info.get('exposed') else "✓ SAFE"
+        lines.append(f"    {file_info['filename']} → {status}")
+    if files.get('exposed_count', 0) > 0:
+        lines.append(f"    ⚠️ WARNING: {files['exposed_count']} sensitive file(s) exposed!")
+    else:
+        lines.append("    ✓ No sensitive files exposed")
+    lines.append("")
+    
+    # [6] SQL Injection Test
+    lines.append("[6] SQL INJECTION TEST")
+    lines.append("-" * 70)
+    sql = checks.get('sql_injection', {})
+    lines.append(f"    Vulnerable: {'Yes' if sql.get('vulnerable') else 'No'}")
+    lines.append(f"    Risk Level: {sql.get('risk_level', 'Unknown')}")
+    lines.append(f"    {sql.get('message', 'No results')}")
+    lines.append("")
+    
+    # Overall Severity Score
+    lines.append("=" * 70)
+    lines.append("OVERALL SEVERITY SCORE")
+    lines.append("=" * 70)
+    severity_score = scan_results.get('severity_score', 0)
+    risk_level = scan_results.get('risk_level', 'Unknown')
+    lines.append(f"    Score: {severity_score}/100")
+    lines.append(f"    Risk Level: {risk_level}")
+    lines.append("")
+    
+    if severity_score >= 70:
+        lines.append("    ⚠️ HIGH RISK - Immediate action required!")
+    elif severity_score >= 40:
+        lines.append("    ⚠️ MEDIUM RISK - Address vulnerabilities soon")
+    else:
+        lines.append("    ✓ LOW RISK - Maintain current security posture")
+    
+    lines.append("=" * 70)
+    
+    full_text = "\n".join(lines)
+    
+    # Create summary
+    summary = (f"Vulnerability scan completed for {scan_results.get('target')}. "
+               f"Risk Level: {risk_level} ({severity_score}/100). "
+               f"{port_scan.get('open_count', 0)} ports open, "
+               f"{len(headers.get('missing_headers', []))} security headers missing, "
+               f"{files.get('exposed_count', 0)} sensitive files exposed.")
+    
+    return {
+        'summary': summary,
+        'full_text': full_text
+    }
+
+
+def calculate_severity_counts(scan_results: Dict[str, Any]) -> Dict[str, int]:
+    """Calculate severity counts from scan results"""
+    counts = {'CRITICAL': 0, 'HIGH': 0, 'MEDIUM': 0, 'LOW': 0}
+    
+    checks = scan_results.get('checks', {})
+    
+    # Exposed files are CRITICAL
+    exposed_files = checks.get('exposed_files', {}).get('exposed_count', 0)
+    counts['CRITICAL'] += exposed_files
+    
+    # SQL injection vulnerability is CRITICAL
+    if checks.get('sql_injection', {}).get('vulnerable'):
+        counts['CRITICAL'] += 1
+    
+    # Open sensitive ports are HIGH
+    port_scan = checks.get('port_scan', {})
+    sensitive_ports = [21, 22, 25, 3306, 445]
+    for port_info in port_scan.get('ports', []):
+        if port_info['status'] == 'open' and port_info['port'] in sensitive_ports:
+            counts['HIGH'] += 1
+    
+    # SSL issues
+    ssl = checks.get('ssl_certificate', {})
+    if ssl.get('status') == 'Expired':
+        counts['HIGH'] += 1
+    elif ssl.get('status') == 'Invalid':
+        counts['MEDIUM'] += 1
+    
+    # Missing security headers are MEDIUM
+    missing_headers = len(checks.get('header_security', {}).get('missing_headers', []))
+    counts['MEDIUM'] += missing_headers
+    
+    # Found directories are LOW
+    found_dirs = checks.get('directory_discovery', {}).get('found_count', 0)
+    counts['LOW'] += found_dirs
+    
+    return counts
 
 
 async def perform_network_scan(
