@@ -9,9 +9,6 @@
 A professional-grade vulnerability detection and security assessment platform for network infrastructure and cloud environments. Features advanced scanning capabilities, compliance mapping, and comprehensive vulnerability reporting.
 
 🔗 **Live Demo**: [SkyScan on Railway](https://skyscan-production.up.railway.app/)
-
-## 🌟 Key Features
-
 ### Advanced Scanning Capabilities
 - ✅ **Professional Network Scanning** - Multi-technique Nmap scanning with service detection, OS fingerprinting, and version analysis
 - ✅ **Cloud Security Assessment** - Comprehensive checks for AWS/Azure/GCP with compliance framework mapping (CIS, NIST, PCI-DSS, HIPAA, SOC2)
@@ -609,8 +606,12 @@ MIT License - See LICENSE file for details
 
 **MIT Mini Project - Cybersecurity: Vulnerability Detector**
 
-- Project Report: SY_Minor_Report_Fin[1].pdf
-- Institution: MIT (Maharashtra Institute of Technology)
+- **Rakshit** - PRN 071
+- **Meghraj** - PRN 237
+- **Bhargav** - PRN 354
+- **Mohak** - PRN 240
+
+Institution: MIT (Maharashtra Institute of Technology)
 
 ## 🔗 Resources
 
